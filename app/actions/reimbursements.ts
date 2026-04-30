@@ -2,6 +2,11 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { ReimbursementClaim, ClaimStatus } from '@/types/reimbursements';
+import { sendMail } from '@/lib/email';
+import { 
+    billReimbursementOpdTemplate, 
+    billRejectedTemplate 
+} from '@/lib/email-templates';
 
 export async function getClaims() {
     const supabase = await createAdminClient();
@@ -54,5 +59,49 @@ export async function processClaim(id: string, status: ClaimStatus, data: { amou
     const { error } = await supabase.from('reimbursement_claims').update(updates).eq('id', id);
 
     if (error) return { success: false, error: error.message };
+
+    // Send notification email
+    try {
+        const { data: claim } = await supabase
+            .from('reimbursement_claims')
+            .select('user_id, title')
+            .eq('id', id)
+            .single();
+            
+        if (claim) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('email, full_name')
+                .eq('id', claim.user_id)
+                .single();
+                
+            if (profile?.email) {
+                if (status === 'approved') {
+                    await sendMail({
+                        to: profile.email,
+                        subject: `Reimbursement Approved - HealthMitra`,
+                        html: billReimbursementOpdTemplate({
+                            customerName: profile.full_name || profile.email.split('@')[0],
+                            amount: data.amount || 0,
+                            percentage: '100', // Default or calculated
+                            taxAmount: '0' // Default or calculated
+                        })
+                    });
+                } else if (status === 'rejected') {
+                    await sendMail({
+                        to: profile.email,
+                        subject: `Reimbursement Claim Update - HealthMitra`,
+                        html: billRejectedTemplate({
+                            customerName: profile.full_name || profile.email.split('@')[0],
+                            remarks: data.notes || 'No remarks provided.'
+                        })
+                    });
+                }
+            }
+        }
+    } catch (emailErr) {
+        console.error('Failed to send claim status email:', emailErr);
+    }
+
     return { success: true, message: `Claim ${status} successfully` };
 }

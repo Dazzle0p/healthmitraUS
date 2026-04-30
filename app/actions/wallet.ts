@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { sendMail } from '@/lib/email';
+import { walletTopUpSuccessTemplate } from '@/lib/email-templates';
 
 export async function ensureWalletExists(userId: string): Promise<{ success: boolean; wallet?: any; error?: string }> {
     const adminClient = await createAdminClient();
@@ -74,6 +76,30 @@ export async function addMoneyToWallet(
 
     if (txnError) {
         console.error('Transaction record error:', txnError);
+    }
+
+    // Send confirmation email
+    try {
+        const { data: profile } = await adminClient
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .single();
+
+        if (profile?.email) {
+            await sendMail({
+                to: profile.email,
+                subject: 'Wallet Top-up Successful - HealthMitra',
+                html: walletTopUpSuccessTemplate({
+                    customerName: profile.full_name || profile.email.split('@')[0],
+                    amount: amount,
+                    transactionId: `WT-${Date.now()}`,
+                    newBalance: newBalance
+                })
+            });
+        }
+    } catch (emailError) {
+        console.error('Failed to send wallet top-up email:', emailError);
     }
 
     return { success: true };

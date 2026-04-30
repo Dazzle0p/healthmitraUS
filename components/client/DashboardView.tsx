@@ -170,7 +170,6 @@ export function DashboardView({ initialData }: DashboardViewProps) {
                     notifications={data.notifications}
                     loading={loading}
                     onMarkRead={markNotificationAsRead}
-                    onMarkAllRead={markAllNotificationsAsRead}
                 />
             </div>
         </div>

@@ -1,6 +1,12 @@
 'use server';
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { sendMail } from "@/lib/email";
+import { 
+    customerTicketUploadedTemplate, 
+    customerServiceApprovedTemplate,
+    adminBillUploadedTemplate
+} from "@/lib/email-templates";
 
 // --- CLIENT ACTIONS ---
 
@@ -73,6 +79,35 @@ export async function createServiceRequest(data: { type: string; memberId?: stri
     if (error) {
         console.error('Service request creation error:', error);
         return { success: false, error: error.message };
+    }
+
+    // Send acknowledgment email to customer
+    try {
+        if (user.email) {
+            await sendMail({
+                to: user.email,
+                subject: `Service Request Received - ${finalRequestId}`,
+                html: customerTicketUploadedTemplate({
+                    customerName: user.user_metadata?.full_name || user.email.split('@')[0],
+                    type: data.type,
+                    ticketId: finalRequestId
+                })
+            });
+        }
+
+        // Notify Admin
+        await sendMail({
+            to: process.env.SMTP_FROM || 'admin@healthmitra.com',
+            subject: `New Service Request - ${finalRequestId}`,
+            html: adminBillUploadedTemplate({
+                adminName: 'Admin',
+                customerName: user.user_metadata?.full_name || user.email || 'User',
+                ticketId: finalRequestId,
+                type: data.type
+            })
+        });
+    } catch (emailErr) {
+        console.error('Failed to send service request emails:', emailErr);
     }
 
     return { success: true, data: req };
@@ -229,5 +264,38 @@ export async function updateServiceRequestStatus(requestId: string, status: stri
         .eq('id', requestId);
 
     if (error) return { success: false, error: error.message };
+
+    // Send status update email
+    try {
+        const { data: request } = await supabase
+            .from('service_requests')
+            .select('user_id, request_id_display, type')
+            .eq('id', requestId)
+            .single();
+
+        if (request) {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('email, full_name')
+                .eq('id', request.user_id)
+                .single();
+
+            if (profile?.email) {
+                await sendMail({
+                    to: profile.email,
+                    subject: `Service Request Update - ${request.request_id_display}`,
+                    html: customerServiceApprovedTemplate({
+                        customerName: profile.full_name || profile.email.split('@')[0],
+                        type: request.type,
+                        ticketId: request.request_id_display,
+                        remarks: notes
+                    })
+                });
+            }
+        }
+    } catch (emailErr) {
+        console.error('Failed to send status update email:', emailErr);
+    }
+
     return { success: true, message: 'Status updated successfully' };
 }

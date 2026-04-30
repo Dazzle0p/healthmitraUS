@@ -133,7 +133,7 @@ export default async function Home() {
 
   const stats = [
     {
-      number: `${(5638 + homepageData.membersCount / 1000).toFixed(0)}K+`,
+      number: `${(5638 + homepageData.membersCount / 1000).toFixed(0)}+`,
       label: "Happy Members",
       icon: Users,
     },

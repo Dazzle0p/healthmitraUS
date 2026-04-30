@@ -23,25 +23,26 @@ export default function ContactPage() {
         e.preventDefault()
         setLoading(true)
         
-        const supabase = createClient()
-        const { error } = await supabase.from('contact_messages').insert({
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            subject: formData.subject,
-            message: formData.message,
-            status: 'pending'
-        })
+        try {
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            const data = await res.json()
 
-        setLoading(false)
-        
-        if (error) {
+            if (!data.success) {
+                toast.error(data.error || 'Failed to send message. Please try again.')
+            } else {
+                setSubmitted(true)
+                toast.success('Message sent successfully! We\'ll get back to you soon.')
+                setTimeout(() => setSubmitted(false), 5000)
+                setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+            }
+        } catch (error) {
             toast.error('Failed to send message. Please try again.')
-        } else {
-            setSubmitted(true)
-            toast.success('Message sent successfully! We\'ll get back to you soon.')
-            setTimeout(() => setSubmitted(false), 5000)
-            setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+        } finally {
+            setLoading(false)
         }
     }
 

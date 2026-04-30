@@ -241,7 +241,7 @@ export const customerServiceApprovedTemplate = ({ customerName, type, ticketId, 
   <p>Respected ${customerName},</p>
   <p>Greetings of the day from HealthMitra.</p>
   <p>Kindly note the following a request for ${type} via Ticket ID ${ticketId} for service has been approved.</p>
-  ${remarks ? \`<p>\${remarks}</p>\` : ''}
+  ${remarks ? `<p>${remarks}</p>` : ''}
   <p>We will service you within the next 24 to 72 working hours or less.</p>
   <br/>
   <p>Regards,<br/><strong>Claims Team</strong></p>
@@ -253,7 +253,7 @@ export const adminServiceApprovedTemplate = ({ adminName, customerName, type, ti
   <p>Respected ${adminName},</p>
   <p>Greetings of the day from HealthMitra.</p>
   <p>Kindly note the following a request for ${type} via Ticket ID ${ticketId} for service has been approved for ${customerName}.</p>
-  ${remarks ? \`<p>\${remarks}</p>\` : ''}
+  ${remarks ? `<p>${remarks}</p>` : ''}
   <p>Service will be done within the next 24 to 72 working hours or less.</p>
   <br/>
   <p>Regards,<br/><strong>Claims Team</strong></p>
@@ -330,4 +330,53 @@ export const ewalletRefundNotInitiatedTemplate = ({ customerName, amount }: any)
 `;
 
 export const generateWhatsAppPurchaseMsg = (name: string, amount: string | number) => 
-  \`Dear \${name}, Thank you for purchasing your Preventive Health care Plan from HealthMitra, Using your Banking to pay for INR \${amount}. Regards HealthMitra 9818823106.\`;
+  `Dear ${name}, Thank you for purchasing your Preventive Health care Plan from HealthMitra, Using your Banking to pay for INR ${amount}. Regards HealthMitra 9818823106.`;
+
+// NEW TEMPLATES FOR WALLET AND FORMS
+export const walletTopUpSuccessTemplate = ({ customerName, amount, transactionId, newBalance }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <p>Dear ${customerName || 'Customer'},</p>
+  <p>Greetings from HealthMitra.</p>
+  <p>We have successfully received your payment of INR ${amount} towards your HealthMitra E-Wallet.</p>
+  <p><strong>Transaction ID:</strong> ${transactionId}</p>
+  <p>Your new E-Wallet balance is now: <strong>INR ${newBalance}</strong>.</p>
+  <p>You can use your wallet balance to purchase services, book tests, and access premium medical consultations on our platform.</p>
+  <br/>
+  <p>Best regards,<br/><strong>HealthMitra Team</strong><br/>+91 9818823106</p>
+</div>
+`;
+
+export const contactUsNotificationTemplate = ({ name, email, phone, message }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <h2>New Contact Us Form Submission</h2>
+  <p>A new query has been submitted via the HealthMitra Get In Touch form:</p>
+  <ul>
+    <li><strong>Name:</strong> ${name}</li>
+    <li><strong>Email:</strong> ${email}</li>
+    <li><strong>Phone:</strong> ${phone || 'N/A'}</li>
+  </ul>
+  <p><strong>Message:</strong></p>
+  <p>${message}</p>
+  <br/>
+  <p>Please follow up with the user within 24 hours.</p>
+</div>
+`;
+
+export const medicalConsultationRequestTemplate = ({ name, email, phone, specialty, date, preferredTime, symptoms }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <h2>New Medical Consultation Request</h2>
+  <p>A user has requested a medical consultation from their dashboard:</p>
+  <ul>
+    <li><strong>Patient Name:</strong> ${name}</li>
+    <li><strong>Email:</strong> ${email}</li>
+    <li><strong>Phone:</strong> ${phone}</li>
+    <li><strong>Specialty Requested:</strong> ${specialty}</li>
+    <li><strong>Preferred Date:</strong> ${date}</li>
+    <li><strong>Preferred Time:</strong> ${preferredTime}</li>
+  </ul>
+  <p><strong>Symptoms/Notes:</strong></p>
+  <p>${symptoms || 'None provided'}</p>
+  <br/>
+  <p>Please arrange the consultation and notify the user.</p>
+</div>
+`;
