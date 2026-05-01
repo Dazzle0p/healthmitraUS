@@ -37,8 +37,8 @@ export async function getPlans(filters?: {
         type: p.type,
         description: p.description,
         basePrice: p.price,
-        gstPercent: 18, // Default or fetch
-        totalPrice: p.price * 1.18, // Calc
+        gstPercent: 0,
+        totalPrice: p.price,
         status: p.status,
         planImage: p.image_url,
         validityType: 'year', // Default for now
@@ -69,8 +69,8 @@ export async function getPlan(id: string) {
         type: data.type,
         description: data.description,
         basePrice: data.price,
-        gstPercent: 18,
-        totalPrice: data.price ? data.price * 1.18 : 0,
+        gstPercent: 0,
+        totalPrice: data.price ? data.price : 0,
         status: data.status,
         planImage: data.image_url,
         validityType: 'year',

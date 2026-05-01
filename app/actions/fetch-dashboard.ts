@@ -93,7 +93,7 @@ export async function fetchDashboardData(): Promise<
       email: user.email,
       phone: "",
     };
-    const wallet = walletRes.data || { balance: 0, currency: "INR" };
+    const wallet = walletRes.data || { balance: 0, currency: "USD" };
     const members = membersRes.data || [];
     const activeMembers = members.filter((m: any) => m.status === "active");
 
@@ -217,7 +217,7 @@ export async function fetchDashboardData(): Promise<
         },
         wallet: {
           balance: wallet.balance || 0,
-          currency: wallet.currency || "INR",
+          currency: wallet.currency || "USD",
           minimumBalance: 0,
         },
         vouchers: {

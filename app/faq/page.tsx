@@ -34,7 +34,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_general_2",
     question: "Is HealthMitra available in my city?",
     answer:
-      "HealthMitra is currently available in major cities including Mumbai, Delhi, Bangalore, Chennai, Kolkata, Hyderabad, Pune, and Ahmedabad. We're expanding rapidly to cover more locations. Please visit our Locations page or enter your pin code on the homepage to check service availability in your area.",
+      "HealthMitra is currently available in major US cities including New York, Los Angeles, Chicago, Houston, Phoenix, Philadelphia, San Antonio, and San Diego. We're expanding rapidly to cover more locations. Please visit our Locations page or enter your zip code on the homepage to check service availability in your area.",
     category: "General",
     status: "active",
     order: 2,
@@ -81,7 +81,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_consult_3",
     question: "How much does a doctor consultation cost?",
     answer:
-      "Consultation fees vary by doctor specialty and experience. General Physicians: ₹300-500, Specialists: ₹500-800, Super Specialists: ₹800-1500. HealthMitra Prime members get 3 free consultations monthly and 20% off on all paid consultations. Emergency consultations are always free.",
+      "Consultation fees vary by doctor specialty and experience. General Physicians: $300-500, Specialists: $500-800, Super Specialists: $800-1500. HealthMitra Prime members get 3 free consultations monthly and 20% off on all paid consultations. Emergency consultations are always free.",
     category: "Doctor Consultations",
     status: "active",
     order: 3,
@@ -90,7 +90,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_consult_4",
     question: "Can I get a home visit from a doctor?",
     answer:
-      "Yes, home visits are available in select cities for general physicians, pediatricians, and geriatric care. The doctor will visit your home at the scheduled time, bring basic diagnostic equipment, and provide treatment. Home visit fees start at ₹800 + consultation fees, depending on distance.",
+      "Yes, home visits are available in select cities for general physicians, pediatricians, and geriatric care. The doctor will visit your home at the scheduled time, bring basic diagnostic equipment, and provide treatment. Home visit fees start at $800 + consultation fees, depending on distance.",
     category: "Doctor Consultations",
     status: "active",
     order: 4,
@@ -164,7 +164,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_diag_6",
     question: "What health packages do you offer?",
     answer:
-      "We offer comprehensive packages: Full Body Checkup (₹999, includes 70+ tests), Women's Health Package (₹799), Diabetes Care Package (₹599), Cardiac Profile (₹1299), Senior Citizen Package (₹1499), and Corporate Wellness Plans. Packages include home collection and doctor consultation.",
+      "We offer comprehensive packages: Full Body Checkup ($999, includes 70+ tests), Women's Health Package ($799), Diabetes Care Package ($599), Cardiac Profile ($1299), Senior Citizen Package ($1499), and Corporate Wellness Plans. Packages include home collection and doctor consultation.",
     category: "Diagnostic Tests",
     status: "active",
     order: 6,
@@ -202,7 +202,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_amb_4",
     question: "How much does ambulance service cost?",
     answer:
-      "Basic Life Support: ₹800-1200 for first 10km + ₹50/km extra. Advanced Life Support (ICU): ₹1500-2000 for first 10km + ₹75/km extra. HealthMitra Prime members get 50% off on the first 2 ambulance rides per year. Emergency services are covered under most health insurance plans.",
+      "Basic Life Support: $800-1200 for first 10km + $50/km extra. Advanced Life Support (ICU): $1500-2000 for first 10km + $75/km extra. HealthMitra Prime members get 50% off on the first 2 ambulance rides per year. Emergency services are covered under most health insurance plans.",
     category: "Ambulance Services",
     status: "active",
     order: 4,
@@ -222,7 +222,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_plan_1",
     question: "What health plans does HealthMitra offer?",
     answer:
-      "We offer 3 plans: Basic (₹199/month) - OPD consultations & 10% lab discounts; Plus (₹499/month) - Unlimited consultations, 25% lab discounts & wellness rewards; Prime (₹999/month) - Family coverage (4 members), unlimited everything, free ambulance, and 5000+ network hospitals for cashless treatment.",
+      "We offer 3 plans: Basic ($199/month) - OPD consultations & 10% lab discounts; Plus ($499/month) - Unlimited consultations, 25% lab discounts & wellness rewards; Prime ($999/month) - Family coverage (4 members), unlimited everything, free ambulance, and 5000+ network hospitals for cashless treatment.",
     category: "Health Plans",
     status: "active",
     order: 1,
@@ -240,7 +240,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_plan_3",
     question: "What are wellness rewards?",
     answer:
-      "Wellness rewards are points earned for healthy activities: daily steps (100 points), health checkups (500 points), completing doctor consultations (200 points). Points can be redeemed for free consultations, lab test discounts (10 points = ₹1), or Amazon/Flipkart vouchers.",
+      "Wellness rewards are points earned for healthy activities: daily steps (100 points), health checkups (500 points), completing doctor consultations (200 points). Points can be redeemed for free consultations, lab test discounts (10 points = $1), or Amazon/Flipkart vouchers.",
     category: "Health Plans",
     status: "active",
     order: 3,
@@ -278,7 +278,7 @@ const staticFAQs: FAQ[] = [
     id: "faq_payment_1",
     question: "What payment methods are accepted?",
     answer:
-      "We accept Credit/Debit Cards (Visa, Mastercard, RuPay, Amex), UPI (Google Pay, PhonePe, Paytm), Net Banking (50+ banks), Wallet (Paytm, Mobikwik), and Cash on Delivery (selected services). EMI options available on card payments above ₹3000.",
+      "We accept Credit/Debit Cards (Visa, Mastercard, RuPay, Amex), UPI (Google Pay, PhonePe, Paytm), Net Banking (50+ banks), Wallet (Paytm, Mobikwik), and Cash on Delivery (selected services). EMI options available on card payments above $3000.",
     category: "Payments & Billing",
     status: "active",
     order: 1,
@@ -301,15 +301,7 @@ const staticFAQs: FAQ[] = [
     status: "active",
     order: 3,
   },
-  {
-    id: "faq_payment_4",
-    question: "Do you offer GST invoices?",
-    answer:
-      "Yes, GST invoices are automatically generated for every transaction. Find them in 'My Bills' section. Our GST is 18% on all services as per Indian tax laws. Corporate customers can provide GST number for input tax credit.",
-    category: "Payments & Billing",
-    status: "active",
-    order: 4,
-  },
+
 
   // Technical Support
   {
@@ -617,11 +609,10 @@ export default function FAQPage() {
                 </Link> */}
               </div>
               <p className="text-xs text-slate-400 mt-6">
-                Or call us:{" "}
-                <a href="tel:18001234567" className="text-teal-600 font-medium">
-                  1800-123-4567
-                </a>{" "}
-                (24/7 Helpline)
+                Or email us:{" "}
+                <a href="mailto:support@HealthMitraus.com" className="text-teal-600 font-medium">
+                  support@HealthMitraus.com
+                </a>
               </p>
             </div>
           </div>

@@ -43,7 +43,7 @@ export async function createRazorpayOrderForPlan(planId: string, amount: number)
 
         const options = {
             amount: Math.round(amount * 100),
-            currency: 'INR',
+            currency: 'USD',
             receipt: `hm_${planId}_${Date.now()}`,
             notes: {
                 planId,
@@ -156,7 +156,7 @@ export async function purchasePlan(data: PlanPurchaseData) {
         user_id: user.id,
         plan_id: data.planId,
         amount: plan.price,
-        currency: 'INR',
+        currency: 'USD',
         status: paymentStatus,
         razorpay_order_id: orderId,
         razorpay_payment_id: transactionId,
@@ -167,7 +167,7 @@ export async function purchasePlan(data: PlanPurchaseData) {
     // Create invoice record for the purchase (non-critical, don't fail if this fails)
     try {
         const invoiceNumber = `INV-${new Date().getFullYear()}-${member.id?.slice(-8).toUpperCase() || Date.now().toString(36).toUpperCase()}`;
-        const gstAmount = Math.round(plan.price * 0.18);
+        const gstAmount = 0;
         await adminClient.from('invoices').insert({
             user_id: user.id,
             plan_id: data.planId,
@@ -175,7 +175,7 @@ export async function purchasePlan(data: PlanPurchaseData) {
             invoice_number: invoiceNumber,
             amount: plan.price,
             gst: gstAmount,
-            total: plan.price + gstAmount,
+            total: plan.price,
             status: 'paid',
             payment_method: data.paymentMethod,
             transaction_id: transactionId,

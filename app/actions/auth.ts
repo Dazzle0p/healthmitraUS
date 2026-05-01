@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { sendMail } from "@/lib/email";
+import { planPurchaseWelcomeTemplate } from "@/lib/email-templates";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -266,6 +268,24 @@ export async function signup(formData: FormData) {
 
       if (profileError) {
         console.error("Profile creation error:", profileError);
+      } else {
+        // Send Welcome Email
+        try {
+          await sendMail({
+            to: email,
+            subject: 'Welcome to HealthMitra!',
+            html: planPurchaseWelcomeTemplate({
+              customerName: fullName,
+              userId: email,
+              password: password,
+              planName: 'HealthMitra Membership',
+              transactionId: 'N/A',
+              amount: '0'
+            })
+          });
+        } catch (emailErr) {
+          console.error("Failed to send welcome email:", emailErr);
+        }
       }
     } catch (e) {
       console.error("Admin client error:", e);

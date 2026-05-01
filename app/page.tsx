@@ -24,6 +24,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import Image from "next/image";
+import { Testimonials } from "@/components/testimonials";
 
 async function getHomepageData() {
   const supabase = await createClient();
@@ -132,17 +133,17 @@ export default async function Home() {
 
   const stats = [
     {
-      number: `${(homepageData.membersCount / 1000).toFixed(0)}K+`,
+      number: `${(5638 + homepageData.membersCount / 1000).toFixed(0)}+`,
       label: "Happy Members",
       icon: Users,
     },
     {
-      number: `${homepageData.plansCount}+`,
+      number: `${10 + homepageData.plansCount}+`,
       label: "Health Plans",
       icon: Shield,
     },
     {
-      number: `${homepageData.citiesCount}+`,
+      number: `${10 + homepageData.citiesCount}+`,
       label: "Cities Covered",
       icon: MapIcon,
     },
@@ -421,7 +422,7 @@ export default async function Home() {
         </section>
 
         {/* Testimonials */}
-        <section className="py-24 bg-white">
+        {/* <section className="py-24 bg-white">
           <div className="max-w-7xl mx-auto px-4 md:px-6">
             <div className="text-center max-w-3xl mx-auto mb-16">
               <h2 className="text-4xl font-bold text-slate-900 mb-4">
@@ -470,7 +471,8 @@ export default async function Home() {
               )}
             </div>
           </div>
-        </section>
+        </section> */}
+        <Testimonials />
 
         {/* CTA Section */}
         <section className="py-24 bg-gradient-to-r from-teal-600 to-teal-700">

@@ -127,7 +127,7 @@ export async function getUserInvoices() {
 
             const fallbackInvoices = Array.from(planMap.values()).map((p: any) => {
                 const amount = p.plans?.price || p.coverage_amount || 0;
-                const gst = Math.round(amount * 0.18);
+                const gst = 0;
                 return {
                     id: p.id,
                     user_id: p.user_id,
@@ -136,7 +136,7 @@ export async function getUserInvoices() {
                     plan_name: p.plans?.name || 'Health Plan',
                     amount: amount,
                     gst: gst,
-                    total: amount + gst,
+                    total: amount,
                     payment_method: 'online',
                     transaction_id: p.card_unique_id || `TXN-${p.id?.slice(-8).toUpperCase()}`,
                     status: p.status === 'active' ? 'paid' : 'pending',

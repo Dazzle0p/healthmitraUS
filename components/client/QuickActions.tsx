@@ -10,6 +10,9 @@ import {
   CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MedicalConsultationForm } from "@/components/client/MedicalConsultationForm";
 
 const ACTIONS = [
   {
@@ -56,12 +59,41 @@ const ACTIONS = [
 ];
 
 export function QuickActions() {
+  const [isConsultationOpen, setIsConsultationOpen] = useState(false);
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold text-slate-800">Quick Actions</h2>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
         {ACTIONS.map((action) => {
           const Icon = action.icon;
+          
+          if (action.label === "Medical Consultation") {
+            return (
+              <Dialog key={action.label} open={isConsultationOpen} onOpenChange={setIsConsultationOpen}>
+                <DialogTrigger asChild>
+                  <button
+                    className={cn(
+                      "flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-4 transition-all duration-200 shadow-sm md:min-h-[120px] w-full",
+                      "hover:shadow-md hover:scale-105 active:scale-95",
+                      action.border
+                    )}
+                  >
+                    <div className={cn("mb-3 rounded-full p-2.5", action.bg)}>
+                      <Icon className={cn("size-6", action.color)} />
+                    </div>
+                    <span className="text-center text-sm font-medium text-slate-700">
+                      {action.label}
+                    </span>
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl p-0 overflow-hidden border-none">
+                  <MedicalConsultationForm onSuccess={() => setIsConsultationOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            );
+          }
+
           return (
             <Link
               key={action.label}

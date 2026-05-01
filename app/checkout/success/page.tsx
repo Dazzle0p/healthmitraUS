@@ -87,13 +87,13 @@ function CheckoutSuccessContent() {
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Start Date</span>
                                         <span className="font-medium text-slate-900">
-                                            {new Date(purchaseData.startDate).toLocaleDateString('en-IN')}
+                                            {new Date(purchaseData.startDate).toLocaleDateString('en-US')}
                                         </span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-slate-500">Valid Until</span>
                                         <span className="font-medium text-teal-600">
-                                            {new Date(purchaseData.expiryDate).toLocaleDateString('en-IN')}
+                                            {new Date(purchaseData.expiryDate).toLocaleDateString('en-US')}
                                         </span>
                                     </div>
                                 </div>

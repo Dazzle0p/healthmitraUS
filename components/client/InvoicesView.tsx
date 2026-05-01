@@ -131,10 +131,7 @@ export function InvoicesView({ invoices }: InvoicesViewProps) {
                                         <span className="text-slate-500">Plan Amount</span>
                                         <span className="text-slate-700">${inv.amount.toLocaleString('en-US')}</span>
                                     </div>
-                                    <div className="flex justify-between mb-2">
-                                        <span className="text-slate-500">GST (18%)</span>
-                                        <span className="text-slate-700">${inv.gst.toLocaleString('en-US')}</span>
-                                    </div>
+                                    {/* GST Row Removed for US Localization */}
                                     <div className="flex justify-between pt-2 border-t border-slate-200 font-bold">
                                         <span className="text-slate-800">Total Amount</span>
                                         <span className="text-slate-800">${inv.total.toLocaleString('en-US')}</span>
@@ -156,14 +153,7 @@ export function InvoicesView({ invoices }: InvoicesViewProps) {
                                     {downloading === inv.id ? <Loader2 size={16} className="animate-spin" /> : <Receipt size={16} />} 
                                     Payment Receipt
                                 </button>
-                                <button 
-                                    onClick={() => handleDownload(inv.id, 'tax')}
-                                    disabled={downloading === inv.id}
-                                    className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
-                                >
-                                    {downloading === inv.id ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />} 
-                                    Tax Receipt (80D)
-                                </button>
+                                {/* Tax Receipt Removed for US Localization */}
                                 <button 
                                     onClick={() => handleDownload(inv.id, 'invoice')}
                                     disabled={downloading === inv.id}

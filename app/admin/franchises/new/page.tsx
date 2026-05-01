@@ -86,7 +86,7 @@ export default function AddFranchisePage() {
                         <Field label="Start Date *" value={franchise.startDate} onChange={v => update({ startDate: v })} type="date" />
                         <Field label="End Date *" value={franchise.endDate} onChange={v => update({ endDate: v })} type="date" />
                         <Field label="Website" value={franchise.website} onChange={v => update({ website: v })} placeholder="https://..." />
-                        <Field label="GST Number" value={franchise.gst} onChange={v => update({ gst: v })} placeholder="GST registration number" />
+                        {/* <Field label="GST Number" value={franchise.gst} onChange={v => update({ gst: v })} placeholder="GST registration number" /> */}
                     </div>
                 </CardContent>
             </Card>

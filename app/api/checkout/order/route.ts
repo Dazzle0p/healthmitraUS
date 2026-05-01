@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import Razorpay from 'razorpay';
+import { validatePromoCode } from '@/app/actions/coupons';
 
 export async function POST(request: Request) {
     try {
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { planId, amount } = await request.json();
+        const { planId, amount, promoCode } = await request.json();
 
         // Get Razorpay settings
         const adminClient = await createAdminClient();
@@ -27,18 +28,37 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Razorpay not configured' }, { status: 400 });
         }
 
+        // Validate plan and amount
+        const { data: plan } = await supabase.from('plans').select('*').eq('id', planId).single();
+        if (!plan) return NextResponse.json({ success: false, error: 'Plan not found' }, { status: 404 });
+
+        let finalAmount = plan.price;
+        if (promoCode) {
+            const promoRes = await validatePromoCode(promoCode, plan.price);
+            if (promoRes.success && promoRes.data) {
+                finalAmount = promoRes.data.finalPrice;
+            }
+        }
+
+        // Security check: ensure amount passed from client matches server calculation
+        if (Math.abs(finalAmount - amount) > 0.01) {
+            console.error('Price mismatch in order creation:', { finalAmount, amount });
+            // For now, use the server-calculated amount to be safe
+        }
+
         const razorpay = new Razorpay({
             key_id: keyId,
             key_secret: keySecret,
         });
 
         const order = await razorpay.orders.create({
-            amount: Math.round(amount * 100),
-            currency: 'INR',
+            amount: Math.round(finalAmount * 100),
+            currency: 'USD',
             receipt: `hm_${planId}_${Date.now()}`,
             notes: {
                 planId,
                 userId: user.id,
+                promoCode: promoCode || '',
             },
         });
 

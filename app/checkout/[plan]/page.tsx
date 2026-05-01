@@ -11,6 +11,9 @@ import { CheckCircle, CreditCard, Shield, Loader2, ArrowLeft, AlertCircle, Star,
 import { createClient } from '@/lib/supabase/client';
 import { loadRazorpay } from '@/lib/razorpay';
 import { toast } from 'sonner';
+import { validatePromoCode } from '@/app/actions/coupons';
+import { Input } from '@/components/ui/input';
+import { Tag } from 'lucide-react';
 
 interface Plan {
     id: string;
@@ -36,6 +39,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
     const [razorpaySettings, setRazorpaySettings] = useState({ enabled: false, keyId: '' });
     const [paypalSettings, setPaypalSettings] = useState({ enabled: false, clientId: '', sandbox: false });
     const [user, setUser] = useState<any>(null);
+    const [promoCode, setPromoCode] = useState('');
+    const [appliedCode, setAppliedCode] = useState<{ code: string; discount: number; type: string } | null>(null);
+    const [validatingCode, setValidatingCode] = useState(false);
     const paypalRendered = useRef(false);
 
     useEffect(() => {
@@ -72,8 +78,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
         if (!paypalContainerRef.current) return;
 
         paypalRendered.current = true;
-        const gst = Math.round(plan.price * 0.18);
-        const total = plan.price + gst;
+        const gst = 0;
+        const total = plan.price;
 
         const scriptId = 'paypal-sdk';
         const existing = document.getElementById(scriptId);
@@ -92,7 +98,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                     const res = await fetch('/api/paypal/create-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ planId: plan.id, amount: total }),
+                        body: JSON.stringify({ 
+                            planId: plan.id, 
+                            amount: total,
+                            promoCode: appliedCode?.code
+                        }),
                     });
                     const data = await res.json();
                     if (!data.success) throw new Error(data.error || 'Failed to create order');
@@ -104,7 +114,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                         const res = await fetch('/api/paypal/capture-order', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ paypalOrderId: data.orderID, planId: plan.id }),
+                            body: JSON.stringify({ 
+                                paypalOrderId: data.orderID, 
+                                planId: plan.id,
+                                promoCode: appliedCode?.code
+                            }),
                         });
                         const result = await res.json();
                         if (result.success) {
@@ -135,7 +149,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
             const response = await fetch('/api/checkout/purchase', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ planId: plan.id, paymentMethod: 'test' }),
+                body: JSON.stringify({ 
+                    planId: plan.id, 
+                    paymentMethod: 'test',
+                    promoCode: appliedCode?.code
+                }),
             });
             const result = await response.json();
             if (result.success) {
@@ -157,7 +175,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
             const orderRes = await fetch('/api/checkout/order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ planId: plan.id, amount: plan.price }),
+                body: JSON.stringify({ 
+                    planId: plan.id, 
+                    amount: total,
+                    promoCode: appliedCode?.code
+                }),
             });
             const orderData = await orderRes.json();
             if (!orderData.success) {
@@ -182,6 +204,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                             paymentMethod: 'razorpay',
                             razorpayOrderId: response.razorpay_order_id,
                             razorpayPaymentId: response.razorpay_payment_id,
+                            promoCode: appliedCode?.code
                         }),
                     });
                     const r = await verifyRes.json();
@@ -201,6 +224,30 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
         }
     };
 
+    const handleApplyPromo = async () => {
+        if (!plan || !promoCode.trim()) return;
+        setValidatingCode(true);
+        try {
+            const res = await validatePromoCode(promoCode.trim(), plan.price);
+            if (res.success && res.data) {
+                setAppliedCode(res.data);
+                toast.success('Promo code applied successfully!');
+            } else {
+                toast.error(res.message || 'Invalid promo code');
+            }
+        } catch {
+            toast.error('Failed to validate promo code');
+        } finally {
+            setValidatingCode(false);
+        }
+    };
+
+    const handleRemovePromo = () => {
+        setAppliedCode(null);
+        setPromoCode('');
+        toast.info('Promo code removed');
+    };
+
     if (loading) {
         return (
             <>
@@ -218,8 +265,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
 
     if (!plan) return null;
 
-    const gst = Math.round(plan.price * 0.18);
-    const total = plan.price + gst;
+    const gst = 0;
+    const discount = appliedCode?.discount || 0;
+    const total = Math.max(0, plan.price - discount);
     const anyLivePayment = razorpaySettings.enabled || paypalSettings.enabled;
 
     return (
@@ -317,15 +365,69 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                                         <span className="text-slate-500">Base Price</span>
                                         <span className="text-slate-800 font-medium">${Number(plan.price || 0).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-slate-500">GST (18%)</span>
-                                        <span className="text-slate-800 font-medium">${gst.toLocaleString()}</span>
-                                    </div>
+                                    {appliedCode && (
+                                        <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                                            <span className="flex items-center gap-1">
+                                                <Tag className="w-3 h-3" />
+                                                Discount ({appliedCode.code})
+                                            </span>
+                                            <span>-${appliedCode.discount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    {/* GST Row Removed for US Localization */}
                                     <div className="h-px bg-slate-100" />
                                     <div className="flex justify-between text-base font-bold">
                                         <span className="text-slate-900">Total Payable</span>
                                         <span className="text-primary text-lg">${total.toLocaleString()}</span>
                                     </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Promo Code Input */}
+                            <Card className="border border-slate-200 shadow-sm">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="text-base text-slate-800">Promo Code / Referral Code</CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    {!appliedCode ? (
+                                        <div className="flex gap-2">
+                                            <Input 
+                                                placeholder="Enter code" 
+                                                value={promoCode}
+                                                onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                                                className="bg-white"
+                                                disabled={validatingCode}
+                                            />
+                                            <Button 
+                                                onClick={handleApplyPromo}
+                                                disabled={validatingCode || !promoCode.trim()}
+                                                variant="outline"
+                                                className="shrink-0 border-primary text-primary hover:bg-primary/5"
+                                            >
+                                                {validatingCode ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-1.5 bg-emerald-100 rounded-md text-emerald-600">
+                                                    <Tag className="w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-emerald-700">{appliedCode.code}</p>
+                                                    <p className="text-xs text-emerald-600">Code applied successfully</p>
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={handleRemovePromo}
+                                                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 h-8 px-2"
+                                            >
+                                                Remove
+                                            </Button>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
@@ -354,7 +456,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                                         {/* Amount display */}
                                         <div className="text-center py-3 border border-slate-100 rounded-xl bg-slate-50">
                                             <p className="text-3xl font-bold text-slate-900">${total.toLocaleString()}</p>
-                                            <p className="text-xs text-slate-400 mt-1">incl. GST</p>
+                                            <p className="text-xs text-slate-400 mt-1">incl. taxes</p>
                                         </div>
 
                                         {/* Razorpay */}

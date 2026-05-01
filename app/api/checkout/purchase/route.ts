@@ -1,5 +1,63 @@
 import { NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { sendMail } from '@/lib/email';
+import { validatePromoCode } from '@/app/actions/coupons';
+
+
+const paymentReceiptTemplate = ({
+  name,
+  planName,
+  amount,
+  transactionId,
+  date
+}: any) => `
+<div style="font-family:sans-serif;max-width:600px;margin:auto;">
+  <h2 style="color:#0891b2;">Payment Receipt</h2>
+  <p>Hey ${name},</p>
+  <p>Thank you for purchasing your Preventive Health Plan.</p>
+
+  <p><strong>Plan:</strong> ${planName}</p>
+  <p><strong>Amount Paid:</strong> $${amount}</p>
+  <p><strong>Transaction ID:</strong> ${transactionId}</p>
+  <p><strong>Date:</strong> ${date}</p>
+
+  <br/>
+  <p>Regards,<br/><strong>HealthMitra Team</strong></p>
+</div>
+`;
+
+
+const welcomeTemplate = ({
+  name,
+  email,
+  planName,
+  amount,
+  transactionId
+}: any) => `
+<div style="font-family:sans-serif;max-width:600px;margin:auto;">
+  <p>Dear ${name},</p>
+
+  <p>Thank you for choosing <strong>HealthMitra</strong>.</p>
+
+  <p>You have successfully purchased <strong>${planName}</strong>.</p>
+
+  <p><strong>Transaction ID:</strong> ${transactionId}</p>
+  <p><strong>Amount:</strong> $${amount}</p>
+
+  <p>Your login details:</p>
+  <ul>
+    <li>User ID: ${email}</li>
+    <li>Password: (set/reset via forgot password)</li>
+  </ul>
+
+  <p>Please download your temporary e-card from your dashboard.</p>
+
+  <p>If you need help, contact us at support.</p>
+
+  <br/>
+  <p>Warm regards,<br/><strong>Team HealthMitra</strong></p>
+</div>
+`;
 
 export async function POST(request: Request) {
     try {
@@ -11,7 +69,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { planId, paymentMethod, razorpayOrderId, razorpayPaymentId } = await request.json();
+        const { planId, paymentMethod, razorpayOrderId, razorpayPaymentId, promoCode } = await request.json();
 
         // Validate required fields
         if (!planId) {
@@ -39,6 +97,17 @@ export async function POST(request: Request) {
             .in('key', ['razorpay_enabled']);
 
         const razorpayEnabled = settings?.find(s => s.key === 'razorpay_enabled')?.value === 'true';
+
+        // Apply promo code if present
+        let discount = 0;
+        let finalAmount = plan.price;
+        if (promoCode) {
+            const promoRes = await validatePromoCode(promoCode, plan.price);
+            if (promoRes.success && promoRes.data) {
+                discount = promoRes.data.discount;
+                finalAmount = promoRes.data.finalPrice;
+            }
+        }
 
         // Determine transaction ID and status
         let transactionId: string;
@@ -119,26 +188,27 @@ export async function POST(request: Request) {
             user_id: user.id,
             plan_id: planId,
             amount: plan.price,
-            currency: 'INR',
+            currency: 'USD',
             status,
             razorpay_order_id: orderId,
             razorpay_payment_id: transactionId,
             payment_method: paymentMethod || 'test',
             purpose: 'plan_purchase',
+            metadata: { promo_code: promoCode, discount: discount }
         });
 
         // Create invoice record — use admin client
-        const gstAmount = Math.round(plan.price * 0.18);
-        const totalAmount = plan.price + gstAmount;
+        const gstAmount = 0;
+        const totalAmount = plan.price;
         
         const { error: invoiceError } = await adminClient.from('invoices').insert({
             user_id: user.id,
             plan_id: planId,
             invoice_number: `INV-${Date.now()}${crypto.randomUUID().replace(/-/g,'').slice(0,6).toUpperCase()}`,
             plan_name: plan.name,
-            amount: plan.price,
+            amount: finalAmount,
             gst: gstAmount,
-            total: totalAmount,
+            total: finalAmount,
             payment_method: paymentMethod || 'test',
             transaction_id: transactionId,
             status: 'paid',
@@ -147,6 +217,56 @@ export async function POST(request: Request) {
         if (invoiceError) {
             console.error('Invoice creation error:', invoiceError);
         }
+
+        // Send confirmation email
+        // if (user.email) {
+        //     await sendMail({
+        //         to: user.email,
+        //         subject: `Payment Successful - Welcome to ${plan.name}`,
+        //         html: `
+        //             <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        //                 <h2 style="color: #0891b2;">Payment Successful!</h2>
+        //                 <p>Hi ${user.email.split('@')[0]},</p>
+        //                 <p>Thank you for purchasing the <strong>${plan.name}</strong> plan.</p>
+        //                 <p>Your membership is now active from <strong>${startDate.toLocaleDateString()}</strong> to <strong>${expiryDate.toLocaleDateString()}</strong>.</p>
+        //                 <p>Total amount paid: $${totalAmount}</p>
+        //                 <br/>
+        //                 <p>Thank you,</p>
+        //                 <p><strong>HealthMitra Team</strong></p>
+        //             </div>
+        //         `
+        //     });
+        // }
+
+        if (user.email) {
+    const name = user.email.split('@')[0];
+
+    // 1️⃣ Payment Receipt
+    await sendMail({
+        to: user.email,
+        subject: `Payment Receipt - ${plan.name}`,
+        html: paymentReceiptTemplate({
+            name,
+            planName: plan.name,
+            amount: totalAmount,
+            transactionId,
+            date: new Date().toLocaleDateString()
+        })
+    });
+
+    // 2️⃣ Welcome Email
+    await sendMail({
+        to: user.email,
+        subject: `Welcome to ${plan.name} - HealthMitra`,
+        html: welcomeTemplate({
+            name,
+            email: user.email,
+            planName: plan.name,
+            amount: totalAmount,
+            transactionId
+        })
+    });
+}
 
         return NextResponse.json({
             success: true,

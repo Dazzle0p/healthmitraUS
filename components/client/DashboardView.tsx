@@ -31,7 +31,7 @@ const DEFAULT_EMPTY_DATA: DashboardData = {
     },
     wallet: {
         balance: 0,
-        currency: "INR",
+        currency: "USD",
         minimumBalance: 0,
     },
     vouchers: {
@@ -170,7 +170,6 @@ export function DashboardView({ initialData }: DashboardViewProps) {
                     notifications={data.notifications}
                     loading={loading}
                     onMarkRead={markNotificationAsRead}
-                    onMarkAllRead={markAllNotificationsAsRead}
                 />
             </div>
         </div>

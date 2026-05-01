@@ -201,7 +201,7 @@ export default function FranchiseDetailPage({ params }: { params: Promise<{ id: 
                                 <InfoRow icon={Calendar} label="Contract" value={`${formatDate(franchise.startDate)} → ${formatDate(franchise.endDate)}`} />
                                 <InfoRow icon={Percent} label="Commission" value={`${franchise.commissionPercent}%`} />
                                 <InfoRow icon={Clock} label="Payout Delay" value={`${franchise.payoutDelay} days`} />
-                                <InfoRow icon={Shield} label="GST" value={franchise.gst || '—'} />
+                                {/* <InfoRow icon={Shield} label="GST" value={franchise.gst || '—'} /> */}
                                 <InfoRow icon={Shield} label="Referral Code" value={franchise.referralCode} />
                             </CardContent>
                         </Card>
