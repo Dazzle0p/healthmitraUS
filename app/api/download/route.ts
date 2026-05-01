@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
 }
 
 function generateHTMLInvoice(invoice: any, purchase: any) {
-    const invoiceDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
-    const gstAmount = Math.round(invoice.amount * 0.18);
-    const totalAmount = invoice.amount + gstAmount;
+    const invoiceDate = new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+    const gstAmount = 0;
+    const totalAmount = invoice.amount;
 
     return `<!DOCTYPE html>
 <html>
@@ -327,7 +327,7 @@ function generateHTMLInvoice(invoice: any, purchase: any) {
                                 <div>Card ID: ${purchase.card_unique_id || 'N/A'}</div>
                             </div>
                         </td>
-                        <td class="text-right font-bold">$${Number(invoice.amount || 0).toLocaleString('en-IN')}</td>
+                        <td class="text-right font-bold">$${Number(invoice.amount || 0).toLocaleString('en-US')}</td>
                     </tr>
                 </tbody>
             </table>
@@ -336,15 +336,12 @@ function generateHTMLInvoice(invoice: any, purchase: any) {
                 <div class="totals-table">
                     <div class="totals-row">
                         <span>Subtotal</span>
-                        <span>$${Number(invoice.amount || 0).toLocaleString('en-IN')}</span>
+                        <span>$${Number(invoice.amount || 0).toLocaleString('en-US')}</span>
                     </div>
-                    <div class="totals-row">
-                        <span>GST (18%)</span>
-                        <span>$${gstAmount.toLocaleString('en-IN')}</span>
-                    </div>
+                    {/* GST Row Removed for US Localization */}
                     <div class="totals-row">
                         <span>Total</span>
-                        <span>$${totalAmount.toLocaleString('en-IN')}</span>
+                        <span>$${totalAmount.toLocaleString('en-US')}</span>
                     </div>
                 </div>
             </div>
@@ -460,7 +457,7 @@ REIMBURSEMENT RECEIPT
 ==========================================
 HealthMitra Healthcare Pvt. Ltd.
 
-Receipt Date: ${new Date().toLocaleDateString('en-IN')}
+Receipt Date: ${new Date().toLocaleDateString('en-US')}
 Receipt No: RCP-${claim.id.slice(0, 8).toUpperCase()}
 
 ------------------------------------------
@@ -514,8 +511,8 @@ Card No: ${member.card_unique_id || 'N/A'}
 ------------------------------------------
 Name: ${member.full_name}
 Relation: ${member.relation || 'Self'}
-Valid From: ${member.valid_from ? new Date(member.valid_from).toLocaleDateString('en-IN') : 'N/A'}
-Valid Till: ${member.valid_till ? new Date(member.valid_till).toLocaleDateString('en-IN') : 'N/A'}
+Valid From: ${member.valid_from ? new Date(member.valid_from).toLocaleDateString('en-US') : 'N/A'}
+Valid Till: ${member.valid_till ? new Date(member.valid_till).toLocaleDateString('en-US') : 'N/A'}
 
 ------------------------------------------
 Plan: ${member.plan?.name || 'N/A'}
@@ -537,7 +534,7 @@ HealthMitra - Your Health Partner
 async function generateReport(supabase: any, userId: string, data: any) {
     const { reportType, startDate, endDate } = data;
 
-    let reportContent = `HEALTHMITRA REPORT\n==========================================\nReport Type: ${reportType}\nGenerated: ${new Date().toLocaleString('en-IN')}\n\n`;
+    let reportContent = `HEALTHMITRA REPORT\n==========================================\nReport Type: ${reportType}\nGenerated: ${new Date().toLocaleString('en-US')}\n\n`;
 
     if (reportType === 'purchases') {
         const { data: purchases } = await supabase
@@ -548,7 +545,7 @@ async function generateReport(supabase: any, userId: string, data: any) {
         reportContent += `Total Plans: ${purchases?.length || 0}\n\n`;
         purchases?.forEach((p: any, i: number) => {
             reportContent += `${i + 1}. ${p.plan?.name || 'N/A'} - $${p.plan?.price || 0}\n`;
-            reportContent += `   Valid: ${p.valid_from ? new Date(p.valid_from).toLocaleDateString('en-IN') : 'N/A'} to ${p.valid_till ? new Date(p.valid_till).toLocaleDateString('en-IN') : 'N/A'}\n`;
+            reportContent += `   Valid: ${p.valid_from ? new Date(p.valid_from).toLocaleDateString('en-US') : 'N/A'} to ${p.valid_till ? new Date(p.valid_till).toLocaleDateString('en-US') : 'N/A'}\n`;
         });
     } else if (reportType === 'claims') {
         const { data: claims } = await supabase

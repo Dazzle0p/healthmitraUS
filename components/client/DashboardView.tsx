@@ -31,7 +31,7 @@ const DEFAULT_EMPTY_DATA: DashboardData = {
     },
     wallet: {
         balance: 0,
-        currency: "INR",
+        currency: "USD",
         minimumBalance: 0,
     },
     vouchers: {

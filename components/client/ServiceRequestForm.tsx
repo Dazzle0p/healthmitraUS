@@ -65,7 +65,7 @@ function TermsModal({
         {
           title: "1. Service Agreement",
           content:
-            "By requesting ambulance services, you agree to pay all applicable charges including base fare (₹800-1500), per-kilometer charges (₹50-75/km), waiting time charges (₹100 per 15 minutes after first 30 minutes), and any medical supplies used during transport.",
+            "By requesting ambulance services, you agree to pay all applicable charges including base fare ($800-1500), per-kilometer charges ($50-75/km), waiting time charges ($100 per 15 minutes after first 30 minutes), and any medical supplies used during transport.",
         },
         {
           title: "2. Medical Consent",
@@ -105,7 +105,7 @@ function TermsModal({
         {
           title: "1. Consultation Agreement",
           content:
-            "By booking a consultation, you agree to pay the consultation fee (₹300-1500 depending on doctor). Fees are non-refundable if cancellation is less than 2 hours before appointment. No-show appointments are charged 100% of fee.",
+            "By booking a consultation, you agree to pay the consultation fee ($300-1500 depending on doctor). Fees are non-refundable if cancellation is less than 2 hours before appointment. No-show appointments are charged 100% of fee.",
         },
         {
           title: "2. Teleconsultation Terms",
@@ -155,7 +155,7 @@ function TermsModal({
         {
           title: "5. Cancellation & Rescheduling",
           content:
-            "• Free cancellation up to 2 hours before collection\n• Free rescheduling anytime\n• After phlebotomist dispatch: ₹100 cancellation fee\n• After sample collection: No cancellation, payment forfeited",
+            "• Free cancellation up to 2 hours before collection\n• Free rescheduling anytime\n• After phlebotomist dispatch: $100 cancellation fee\n• After sample collection: No cancellation, payment forfeited",
         },
       ],
     },
@@ -170,7 +170,7 @@ function TermsModal({
         {
           title: "2. Delivery Policy",
           content:
-            "Standard delivery: 2-4 hours. Express delivery: 30-60 minutes (additional ₹50). Free delivery on orders above ₹500. Delivery available within 5km of partner pharmacies.",
+            "Standard delivery: 2-4 hours. Express delivery: 30-60 minutes (additional $50). Free delivery on orders above $500. Delivery available within 5km of partner pharmacies.",
         },
         {
           title: "3. Return & Refund",
@@ -919,16 +919,16 @@ export function ServiceRequestForm({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="full-body">
-                      Full Body Checkup - ₹999 (70+ tests)
+                      Full Body Checkup - $999 (70+ tests)
                     </SelectItem>
                     <SelectItem value="diabetes">
-                      Diabetes Care - ₹599 (12 tests)
+                      Diabetes Care - $599 (12 tests)
                     </SelectItem>
                     <SelectItem value="cardiac">
-                      Cardiac Profile - ₹1299 (25 tests)
+                      Cardiac Profile - $1299 (25 tests)
                     </SelectItem>
                     <SelectItem value="thyroid">
-                      Thyroid Profile - ₹399 (3 tests)
+                      Thyroid Profile - $399 (3 tests)
                     </SelectItem>
                   </SelectContent>
                 </Select>

@@ -26,7 +26,7 @@ const INITIAL_PLAN: Partial<Plan> = {
     type: 'B2C',
     description: '',
     basePrice: 0,
-    gstPercent: 18,
+    gstPercent: 0,
     totalPrice: 0,
     status: 'draft',
     validityType: 'year',
@@ -147,8 +147,8 @@ export default function CreatePlanWizard() {
             const updated = { ...prev, ...updates };
             if (updates.basePrice !== undefined || updates.gstPercent !== undefined) {
                 const base = updates.basePrice ?? prev.basePrice ?? 0;
-                const gst = updates.gstPercent ?? prev.gstPercent ?? 18;
-                updated.totalPrice = base + (base * (gst / 100));
+                const gst = 0;
+                updated.totalPrice = base;
             }
             return updated;
         });
@@ -312,10 +312,10 @@ export default function CreatePlanWizard() {
                                     <Label>Base Price ($) *</Label>
                                     <Input type="number" value={plan.basePrice} onChange={e => updatePlan({ basePrice: parseFloat(e.target.value) })} className="bg-white border-slate-200 text-slate-900" />
                                 </div>
-                                <div className="space-y-2">
+                                {/* <div className="space-y-2">
                                     <Label>GST (%)</Label>
                                     <Input type="number" value={plan.gstPercent} onChange={e => updatePlan({ gstPercent: parseFloat(e.target.value) })} className="bg-white border-slate-200 text-slate-900" />
-                                </div>
+                                </div> */}
                                 <div className="space-y-2">
                                     <Label className="text-teal-600">Total Price (Auto)</Label>
                                     <div className="h-10 px-3 py-2 bg-teal-50 border border-teal-200 rounded-md text-teal-600 font-bold">

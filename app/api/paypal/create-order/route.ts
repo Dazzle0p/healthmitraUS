@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { validatePromoCode } from '@/app/actions/coupons';
 
 async function getPayPalAccessToken(clientId: string, clientSecret: string, sandbox: boolean) {
     const base = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-        const { planId, amount } = await request.json();
+        const { planId, amount, promoCode } = await request.json();
 
         const adminClient = await createAdminClient();
         const { data: settings } = await adminClient.from('system_settings')
@@ -39,9 +40,27 @@ export async function POST(request: Request) {
         }
 
         const { accessToken, base } = await getPayPalAccessToken(clientId, clientSecret, sandbox);
+        
+        // Validate plan and amount
+        const { data: plan } = await supabase.from('plans').select('*').eq('id', planId).single();
+        if (!plan) return NextResponse.json({ success: false, error: 'Plan not found' }, { status: 404 });
+
+        let finalAmount = plan.price;
+        if (promoCode) {
+            const promoRes = await validatePromoCode(promoCode, plan.price);
+            if (promoRes.success && promoRes.data) {
+                finalAmount = promoRes.data.finalPrice;
+            }
+        }
+
+        // Security check: ensure amount passed from client matches server calculation
+        if (Math.abs(finalAmount - amount) > 0.01) {
+             console.error('Price mismatch in PayPal order creation:', { finalAmount, amount });
+             // Use finalAmount for safety
+        }
 
         // Amount is already in USD (prices stored in USD)
-        const usdAmount = Number(amount).toFixed(2);
+        const usdAmount = Number(finalAmount).toFixed(2);
 
         const res = await fetch(`${base}/v2/checkout/orders`, {
             method: 'POST',

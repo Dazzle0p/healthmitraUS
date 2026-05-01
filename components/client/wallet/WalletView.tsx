@@ -70,7 +70,7 @@ export function WalletView({ wallet, stats, billRefunds = [], userName = '' }: W
                             <h2 className="text-emerald-100 font-medium text-sm mb-2 flex items-center gap-2">
                                 <Wallet size={16} /> TOTAL WALLET BALANCE
                             </h2>
-                            <div className="text-4xl font-bold mb-4">${totalBalance.toLocaleString('en-IN')}</div>
+                            <div className="text-4xl font-bold mb-4">${totalBalance.toLocaleString('en-US')}</div>
 
                             {/* Balance Breakdown */}
                             <div className="grid grid-cols-2 gap-3 mb-5">
@@ -78,7 +78,7 @@ export function WalletView({ wallet, stats, billRefunds = [], userName = '' }: W
                                     <div className="flex items-center gap-2 text-emerald-100 text-xs mb-1">
                                         <Upload size={12} /> Added Money
                                     </div>
-                                    <p className="text-xl font-bold">${addedMoney.toLocaleString('en-IN')}</p>
+                                    <p className="text-xl font-bold">${addedMoney.toLocaleString('en-US')}</p>
                                     <p className="text-[10px] text-emerald-200 mt-1 flex items-center gap-1">
                                         <AlertCircle size={10} /> Not withdrawable
                                     </p>
@@ -87,7 +87,7 @@ export function WalletView({ wallet, stats, billRefunds = [], userName = '' }: W
                                     <div className="flex items-center gap-2 text-white text-xs mb-1">
                                         <Receipt size={12} /> Bill Refunds
                                     </div>
-                                    <p className="text-xl font-bold">${billRefundBalance.toLocaleString('en-IN')}</p>
+                                    <p className="text-xl font-bold">${billRefundBalance.toLocaleString('en-US')}</p>
                                     <p className="text-[10px] text-emerald-100 mt-1 flex items-center gap-1">
                                         <CheckCircle size={10} /> Withdrawable
                                     </p>
@@ -140,7 +140,7 @@ export function WalletView({ wallet, stats, billRefunds = [], userName = '' }: W
                             <h3 className="font-bold text-slate-800 flex items-center gap-2">
                                 <Receipt size={18} className="text-teal-600" /> Withdrawable Bill Refunds
                             </h3>
-                            <span className="text-sm text-teal-600 font-semibold">${billRefundBalance.toLocaleString('en-IN')}</span>
+                            <span className="text-sm text-teal-600 font-semibold">${billRefundBalance.toLocaleString('en-US')}</span>
                         </div>
                         <div className="divide-y divide-slate-100">
                             {billRefunds.length === 0 ? (
@@ -157,7 +157,7 @@ export function WalletView({ wallet, stats, billRefunds = [], userName = '' }: W
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="font-bold text-emerald-600">${bill.amount.toLocaleString('en-IN')}</p>
+                                        <p className="font-bold text-emerald-600">${bill.amount.toLocaleString('en-US')}</p>
                                         <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Withdrawable</span>
                                     </div>
                                 </div>

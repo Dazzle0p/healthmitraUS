@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { sendMail } from '@/lib/email';
+import { validatePromoCode } from '@/app/actions/coupons';
 
 
 const paymentReceiptTemplate = ({
@@ -16,7 +17,7 @@ const paymentReceiptTemplate = ({
   <p>Thank you for purchasing your Preventive Health Plan.</p>
 
   <p><strong>Plan:</strong> ${planName}</p>
-  <p><strong>Amount Paid:</strong> ₹${amount}</p>
+  <p><strong>Amount Paid:</strong> $${amount}</p>
   <p><strong>Transaction ID:</strong> ${transactionId}</p>
   <p><strong>Date:</strong> ${date}</p>
 
@@ -41,7 +42,7 @@ const welcomeTemplate = ({
   <p>You have successfully purchased <strong>${planName}</strong>.</p>
 
   <p><strong>Transaction ID:</strong> ${transactionId}</p>
-  <p><strong>Amount:</strong> ₹${amount}</p>
+  <p><strong>Amount:</strong> $${amount}</p>
 
   <p>Your login details:</p>
   <ul>
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { planId, paymentMethod, razorpayOrderId, razorpayPaymentId } = await request.json();
+        const { planId, paymentMethod, razorpayOrderId, razorpayPaymentId, promoCode } = await request.json();
 
         // Validate required fields
         if (!planId) {
@@ -96,6 +97,17 @@ export async function POST(request: Request) {
             .in('key', ['razorpay_enabled']);
 
         const razorpayEnabled = settings?.find(s => s.key === 'razorpay_enabled')?.value === 'true';
+
+        // Apply promo code if present
+        let discount = 0;
+        let finalAmount = plan.price;
+        if (promoCode) {
+            const promoRes = await validatePromoCode(promoCode, plan.price);
+            if (promoRes.success && promoRes.data) {
+                discount = promoRes.data.discount;
+                finalAmount = promoRes.data.finalPrice;
+            }
+        }
 
         // Determine transaction ID and status
         let transactionId: string;
@@ -176,26 +188,27 @@ export async function POST(request: Request) {
             user_id: user.id,
             plan_id: planId,
             amount: plan.price,
-            currency: 'INR',
+            currency: 'USD',
             status,
             razorpay_order_id: orderId,
             razorpay_payment_id: transactionId,
             payment_method: paymentMethod || 'test',
             purpose: 'plan_purchase',
+            metadata: { promo_code: promoCode, discount: discount }
         });
 
         // Create invoice record — use admin client
-        const gstAmount = Math.round(plan.price * 0.18);
-        const totalAmount = plan.price + gstAmount;
+        const gstAmount = 0;
+        const totalAmount = plan.price;
         
         const { error: invoiceError } = await adminClient.from('invoices').insert({
             user_id: user.id,
             plan_id: planId,
             invoice_number: `INV-${Date.now()}${crypto.randomUUID().replace(/-/g,'').slice(0,6).toUpperCase()}`,
             plan_name: plan.name,
-            amount: plan.price,
+            amount: finalAmount,
             gst: gstAmount,
-            total: totalAmount,
+            total: finalAmount,
             payment_method: paymentMethod || 'test',
             transaction_id: transactionId,
             status: 'paid',
@@ -216,7 +229,7 @@ export async function POST(request: Request) {
         //                 <p>Hi ${user.email.split('@')[0]},</p>
         //                 <p>Thank you for purchasing the <strong>${plan.name}</strong> plan.</p>
         //                 <p>Your membership is now active from <strong>${startDate.toLocaleDateString()}</strong> to <strong>${expiryDate.toLocaleDateString()}</strong>.</p>
-        //                 <p>Total amount paid: ₹${totalAmount}</p>
+        //                 <p>Total amount paid: $${totalAmount}</p>
         //                 <br/>
         //                 <p>Thank you,</p>
         //                 <p><strong>HealthMitra Team</strong></p>

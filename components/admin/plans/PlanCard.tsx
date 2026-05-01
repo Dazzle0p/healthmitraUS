@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Edit2, Trash2, Power, History, Copy, FileText, ImageIcon } from 'lucide-react';
 
 const formatMoney = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'INR',
+        currency: 'USD',
         maximumFractionDigits: 0
     }).format(amount);
 };

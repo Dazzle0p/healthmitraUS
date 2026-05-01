@@ -24,7 +24,7 @@ export async function ensureWalletExists(userId: string): Promise<{ success: boo
         .insert({
             user_id: userId,
             balance: 0,
-            currency: 'INR'
+            currency: 'USD'
         })
         .select()
         .single();

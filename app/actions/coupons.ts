@@ -88,28 +88,58 @@ export async function deleteCoupon(id: string) {
     return { success: true, message: 'Coupon deleted' };
 }
 
-export async function validateCoupon(code: string, cartAmount: number) {
+export async function validatePromoCode(code: string, cartAmount: number) {
     const supabase = await createClient();
+    const adminClient = await createAdminClient();
 
-    const { data: coupon, error } = await supabase
+    if (!code) return { success: false, message: 'Please enter a code' };
+
+    // 1. Try Coupon first
+    const { data: coupon } = await supabase
         .from('coupons')
         .select('*')
         .eq('code', code.toUpperCase())
+        .eq('is_active', true)
         .single();
 
-    if (error || !coupon) return { success: false, message: 'Invalid or expired coupon' };
+    if (coupon) {
+        const now = new Date();
+        if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+             return { success: false, message: 'Coupon expired' };
+        }
+        if (coupon.usage_limit && coupon.used_count >= coupon.usage_limit) {
+            return { success: false, message: 'Coupon usage limit reached' };
+        }
 
-    if (!coupon.is_active) return { success: false, message: 'Coupon is not active' };
-
-    const now = new Date();
-    if (coupon.valid_until && new Date(coupon.valid_until) < now) return { success: false, message: 'Coupon expired' };
-
-    let discount = 0;
-    if (coupon.discount_type === 'percentage') {
-        discount = (cartAmount * coupon.discount_value) / 100;
-    } else {
-        discount = coupon.discount_value;
+        let discount = 0;
+        if (coupon.discount_type === 'percentage') {
+            discount = (cartAmount * Number(coupon.discount_value)) / 100;
+        } else {
+            discount = Number(coupon.discount_value);
+        }
+        return { success: true, data: { type: 'coupon', code: coupon.code, discount, finalPrice: cartAmount - discount } };
     }
 
-    return { success: true, data: { code: coupon.code, discount, finalPrice: cartAmount - discount } };
+    // 2. Try Franchise Code
+    const { data: franchise } = await supabase
+        .from('franchises')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .eq('status', 'active')
+        .single();
+
+    if (franchise) {
+        // Get referral discount from settings
+        const { data: settings } = await adminClient.from('system_settings')
+            .select('key, value')
+            .eq('key', 'referral_discount')
+            .single();
+        
+        const discountPercent = parseFloat(settings?.value || '10');
+        const discount = (cartAmount * discountPercent) / 100;
+
+        return { success: true, data: { type: 'referral', code: franchise.code, discount, finalPrice: cartAmount - discount } };
+    }
+
+    return { success: false, message: 'Invalid or expired code' };
 }

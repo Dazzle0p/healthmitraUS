@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import { validatePromoCode } from '@/app/actions/coupons';
 
 async function getPayPalAccessToken(clientId: string, clientSecret: string, sandbox: boolean) {
     const base = sandbox ? 'https://api-m.sandbox.paypal.com' : 'https://api-m.paypal.com';
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
 
-        const { paypalOrderId, planId } = await request.json();
+        const { paypalOrderId, planId, promoCode } = await request.json();
 
         const { data: settings } = await adminClient.from('system_settings')
             .select('key, value')
@@ -60,6 +61,17 @@ export async function POST(request: Request) {
             .from('plans').select('*').eq('id', planId).single();
         if (planError || !plan) {
             return NextResponse.json({ success: false, error: 'Plan not found' }, { status: 404 });
+        }
+
+        // Apply promo code if present
+        let discount = 0;
+        let finalAmount = plan.price;
+        if (promoCode) {
+            const promoRes = await validatePromoCode(promoCode, plan.price);
+            if (promoRes.success && promoRes.data) {
+                discount = promoRes.data.discount;
+                finalAmount = promoRes.data.finalPrice;
+            }
         }
 
         // Ensure profile exists — use admin client to bypass RLS
@@ -103,24 +115,25 @@ export async function POST(request: Request) {
         await adminClient.from('payments').insert({
             user_id: user.id,
             plan_id: planId,
-            amount: plan.price,
+            amount: finalAmount,
             currency: 'USD',
             status: 'captured',
             razorpay_order_id: null,
             razorpay_payment_id: captureId || paypalOrderId,
             payment_method: 'paypal',
+            metadata: { promo_code: promoCode, discount: discount }
         });
 
         // Create invoice — use admin client
-        const gstAmount = Math.round(plan.price * 0.18);
+        const gstAmount = 0;
         await adminClient.from('invoices').insert({
             user_id: user.id,
             plan_id: planId,
             invoice_number: `INV-${Date.now()}${crypto.randomUUID().replace(/-/g,'').slice(0,6).toUpperCase()}`,
             plan_name: plan.name,
-            amount: plan.price,
+            amount: finalAmount,
             gst: gstAmount,
-            total: plan.price + gstAmount,
+            total: finalAmount,
             payment_method: 'paypal',
             transaction_id: captureId || paypalOrderId,
             status: 'paid',

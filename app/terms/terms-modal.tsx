@@ -17,7 +17,7 @@ const termsContent = {
       {
         title: "1. Service Agreement",
         content:
-          "By requesting ambulance services, you agree to pay all applicable charges including base fare, per-kilometer charges (₹50-75/km), waiting time charges (₹100 per 15 minutes after first 30 minutes), and any medical supplies used during transport.",
+          "By requesting ambulance services, you agree to pay all applicable charges including base fare, per-kilometer charges ($50-75/km), waiting time charges ($100 per 15 minutes after first 30 minutes), and any medical supplies used during transport.",
       },
       {
         title: "2. Medical Consent",
@@ -37,7 +37,7 @@ const termsContent = {
       {
         title: "5. Cancellation Policy",
         content:
-          "• Cancellation within 2 minutes of booking: No charges\n• Cancellation after ambulance dispatch: 50% of base fare (₹400-600)\n• Cancellation after arrival at pickup location: Full base fare (₹800-1500)\n• No-show when ambulance arrives: Full fare + waiting charges\n• Cancellation by HealthMitra due to safety concerns: No charges",
+          "• Cancellation within 2 minutes of booking: No charges\n• Cancellation after ambulance dispatch: 50% of base fare ($400-600)\n• Cancellation after arrival at pickup location: Full base fare ($800-1500)\n• No-show when ambulance arrives: Full fare + waiting charges\n• Cancellation by HealthMitra due to safety concerns: No charges",
       },
       {
         title: "6. Data Privacy & Location Tracking",
@@ -62,7 +62,7 @@ const termsContent = {
       {
         title: "1. Consultation Agreement",
         content:
-          "By booking a consultation, you agree to pay the consultation fee (₹300-1500 depending on doctor). Fees are non-refundable if cancellation is less than 2 hours before appointment. No-show appointments are charged 100% of fee.",
+          "By booking a consultation, you agree to pay the consultation fee ($300-1500 depending on doctor). Fees are non-refundable if cancellation is less than 2 hours before appointment. No-show appointments are charged 100% of fee.",
       },
       {
         title: "2. Teleconsultation Terms",
@@ -107,7 +107,7 @@ const termsContent = {
       {
         title: "3. Report Delivery",
         content:
-          "• Routine tests: 6-12 hours\n• Specialized tests: 24-72 hours\n• Genetic/Histopathology: 3-7 days\n• Reports are preliminary until digitally signed by pathologist\n• Physical copies available for ₹99 shipping fee",
+          "• Routine tests: 6-12 hours\n• Specialized tests: 24-72 hours\n• Genetic/Histopathology: 3-7 days\n• Reports are preliminary until digitally signed by pathologist\n• Physical copies available for $99 shipping fee",
       },
       {
         title: "4. Quality Guarantee",
@@ -117,7 +117,7 @@ const termsContent = {
       {
         title: "5. Cancellation & Rescheduling",
         content:
-          "• Free cancellation up to 2 hours before collection\n• Free rescheduling anytime\n• After phlebotomist dispatch: ₹100 cancellation fee\n• After sample collection: No cancellation, payment forfeited\n• Refunds: 5-7 business days",
+          "• Free cancellation up to 2 hours before collection\n• Free rescheduling anytime\n• After phlebotomist dispatch: $100 cancellation fee\n• After sample collection: No cancellation, payment forfeited\n• Refunds: 5-7 business days",
       },
       {
         title: "6. Sample Storage & Disposal",
@@ -137,7 +137,7 @@ const termsContent = {
       {
         title: "2. Coverage Details",
         content:
-          "• Basic (₹199/mo): 2 OPD consultations, 10% lab discount\n• Plus (₹499/mo): Unlimited consultations, 25% lab discount, 1 dependent\n• Prime (₹999/mo): Family of 4, 5000+ network hospitals, free ambulance (2/year)\n• Wellness rewards expire 6 months after earning",
+          "• Basic ($199/mo): 2 OPD consultations, 10% lab discount\n• Plus ($499/mo): Unlimited consultations, 25% lab discount, 1 dependent\n• Prime ($999/mo): Family of 4, 5000+ network hospitals, free ambulance (2/year)\n• Wellness rewards expire 6 months after earning",
       },
       {
         title: "3. Cancellation & Refund",
@@ -152,7 +152,7 @@ const termsContent = {
       {
         title: "5. Fair Usage Policy",
         content:
-          "• Max 12 consultations per year per condition\n• Ambulance: Max 2 per year for Prime\n• Lab discounts: Max ₹5000 per month\n• Abuse (excessive usage) may result in plan review",
+          "• Max 12 consultations per year per condition\n• Ambulance: Max 2 per year for Prime\n• Lab discounts: Max $5000 per month\n• Abuse (excessive usage) may result in plan review",
       },
       {
         title: "6. Automatic Renewal",

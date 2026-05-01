@@ -30,7 +30,7 @@ async function fetchDashboardDataClient(): Promise<{ success: boolean; data?: Da
         const notifsRes = results[5].status === 'fulfilled' ? results[5].value : { data: null, error: results[5].reason };
 
         const profile = profileRes.data || { full_name: user.email?.split('@')[0], email: user.email, phone: '' };
-        const wallet = walletRes.data || { balance: 0, currency: 'INR' };
+        const wallet = walletRes.data || { balance: 0, currency: 'USD' };
         const members = membersRes.data || [];
         const activeMembers = members.filter((m: any) => m.status === 'active');
 
@@ -116,7 +116,7 @@ async function fetchDashboardDataClient(): Promise<{ success: boolean; data?: Da
                 },
                 wallet: {
                     balance: wallet.balance || 0,
-                    currency: wallet.currency || 'INR',
+                    currency: wallet.currency || 'USD',
                     minimumBalance: 0,
                 },
                 vouchers: { available: 0, used: 0, expired: 0, totalValue: 0 },
