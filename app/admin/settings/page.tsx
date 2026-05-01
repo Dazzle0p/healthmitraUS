@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import RazorpaySettingsForm from '@/components/admin/settings/RazorpaySettingsForm';
 import PaypalSettingsForm from '@/components/admin/settings/PaypalSettingsForm';
+import StripeSettingsForm from '@/components/admin/settings/StripeSettingsForm';
 import { Loader2, Save, Settings, CreditCard, Mail, Phone, Globe, Shield, Users, Wallet, AlertCircle } from 'lucide-react';
 
 interface SystemSettings {
@@ -329,6 +330,7 @@ export default function SettingsPage() {
                 <TabsContent value="payment">
                     <div className="space-y-6">
                         <RazorpaySettingsForm />
+                        <StripeSettingsForm />
                         <PaypalSettingsForm />
                     </div>
                 </TabsContent>

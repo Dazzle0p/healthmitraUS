@@ -318,3 +318,47 @@ export async function testPayPalConnection() {
         return { success: false, error: e.message };
     }
 }
+// --- STRIPE SETTINGS (Admin Only) ---
+
+export async function getStripeSettings() {
+    const supabase = await createAdminClient();
+    const { data, error } = await supabase.from('system_settings')
+        .select('key, value')
+        .in('key', ['stripe_enabled', 'stripe_publishable_key', 'stripe_secret_key', 'stripe_webhook_secret']);
+
+    if (error) return { success: false, error: error.message };
+
+    const settings: Record<string, string> = {};
+    data?.forEach((item: any) => { settings[item.key] = item.value; });
+
+    return { success: true, data: settings };
+}
+
+export async function updateStripeSettings(keys: {
+    publishableKey: string;
+    secretKey: string | null;
+    webhookSecret?: string | null;
+    enabled: boolean;
+}) {
+    const supabase = await createAdminClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id || 'system';
+
+    const upserts = [
+        { key: 'stripe_enabled', value: keys.enabled ? 'true' : 'false', description: 'Enable Stripe payments', is_secure: false, updated_by: userId },
+        { key: 'stripe_publishable_key', value: keys.publishableKey, description: 'Stripe Publishable Key', is_secure: false, updated_by: userId },
+    ];
+
+    if (keys.secretKey && !keys.secretKey.includes('***')) {
+        upserts.push({ key: 'stripe_secret_key', value: keys.secretKey, description: 'Stripe Secret Key', is_secure: true, updated_by: userId });
+    }
+
+    if (keys.webhookSecret !== null && keys.webhookSecret !== undefined && !keys.webhookSecret.includes('***')) {
+        upserts.push({ key: 'stripe_webhook_secret', value: keys.webhookSecret, description: 'Stripe Webhook Secret', is_secure: true, updated_by: userId });
+    }
+
+    const { error } = await supabase.from('system_settings').upsert(upserts, { onConflict: 'key' });
+    if (error) return { success: false, error: error.message };
+
+    return { success: true, message: 'Stripe settings updated successfully' };
+}

@@ -81,8 +81,12 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold mb-1">Phone</h3>
-                                        <p className="text-muted-foreground">1800-123-4567 (Toll Free)</p>
-                                        <p className="text-muted-foreground">+91 98765 43210</p>
+                                        <div className="space-y-1">
+                                            <p className="text-sm font-medium">USA Office</p>
+                                            <p className="text-muted-foreground">716-579-0346</p>
+                                            <p className="text-sm font-medium mt-2">India Office</p>
+                                            <p className="text-muted-foreground">+91 9818823106</p>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -92,8 +96,8 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="font-semibold mb-1">Email</h3>
-                                        <p className="text-muted-foreground">support@healthmitra.com</p>
-                                        <p className="text-muted-foreground">sales@healthmitra.com</p>
+                                        <p className="text-muted-foreground">service@HealthMitraus.com</p>
+                                        <p className="text-muted-foreground">Service@HealthMitra.co.in</p>
                                     </div>
                                 </div>
 
@@ -101,13 +105,23 @@ export default function ContactPage() {
                                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                                         <MapPin className="w-5 h-5 text-primary" />
                                     </div>
-                                    <div>
-                                        <h3 className="font-semibold mb-1">Address</h3>
-                                        <p className="text-muted-foreground">
-                                            HealthMitra Headquarters<br />
-                                            123 Healthcare Avenue<br />
-                                            Bangalore, Karnataka 560001
-                                        </p>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <h3 className="font-semibold mb-1">USA Office</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                1550 Sheridan Drive, Buffalo,<br />
+                                                NY 14217, United States
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold mb-1">India Office</h3>
+                                            <p className="text-muted-foreground text-sm">
+                                                HealthMitra Systems AI Pvt Ltd,<br />
+                                                C/O JSS Academy of Technical Education,<br />
+                                                C-20/1, Sector 62, Noida,<br />
+                                                Uttar Pradesh 201309, India
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 

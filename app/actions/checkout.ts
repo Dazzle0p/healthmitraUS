@@ -6,7 +6,7 @@ import Razorpay from 'razorpay';
 
 interface PlanPurchaseData {
     planId: string;
-    paymentMethod: 'razorpay' | 'test';
+    paymentMethod: 'razorpay' | 'paypal' | 'stripe' | 'test';
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
 }
@@ -97,10 +97,12 @@ export async function purchasePlan(data: PlanPurchaseData) {
 
     if (settings.enabled && data.paymentMethod === 'razorpay') {
         // In production, you'd verify the payment here
-        // For now, mark as completed since Razorpay handles verification
         paymentStatus = 'completed';
         transactionId = data.razorpayPaymentId || `RAZORPAY_${Date.now()}`;
-    } else if (!settings.enabled) {
+    } else if (data.paymentMethod === 'paypal' || data.paymentMethod === 'stripe') {
+        paymentStatus = 'completed';
+        transactionId = data.razorpayPaymentId || `${data.paymentMethod.toUpperCase()}_${Date.now()}`;
+    } else {
         // Test mode - no real payment
         paymentStatus = 'completed';
         transactionId = `TEST_${Date.now()}`;

@@ -1,6 +1,7 @@
 'use client';
 
 import RazorpaySettingsForm from "@/components/admin/settings/RazorpaySettingsForm";
+import StripeSettingsForm from "@/components/admin/settings/StripeSettingsForm";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 
 export default function PaymentGatewaysPage() {
@@ -29,9 +30,7 @@ export default function PaymentGatewaysPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div className="md:col-span-2 space-y-6">
                     <RazorpaySettingsForm />
-
-                    {/* Placeholder for future gateways */}
-                    {/* <StripeSettingsForm /> */}
+                    <StripeSettingsForm />
                 </div>
 
                 <div className="space-y-6">

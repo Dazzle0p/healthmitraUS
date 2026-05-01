@@ -76,7 +76,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: false, error: 'Plan ID is required' }, { status: 400 });
         }
 
-        if (!paymentMethod || !['razorpay', 'paypal', 'test'].includes(paymentMethod)) {
+        if (!paymentMethod || !['razorpay', 'paypal', 'stripe', 'test'].includes(paymentMethod)) {
             return NextResponse.json({ success: false, error: 'Invalid payment method' }, { status: 400 });
         }
 
@@ -129,12 +129,19 @@ export async function POST(request: Request) {
             if (!razorpayOrderId) {
                 return NextResponse.json({ success: false, error: 'PayPal order ID is required' }, { status: 400 });
             }
-            transactionId = razorpayOrderId;
+            transactionId = razorpayPaymentId || razorpayOrderId;
+            status = 'captured';
+        } else if (paymentMethod === 'stripe') {
+            // Stripe - validate payment ID exists
+            if (!razorpayPaymentId) {
+                return NextResponse.json({ success: false, error: 'Stripe payment ID is required' }, { status: 400 });
+            }
+            transactionId = razorpayPaymentId;
             status = 'captured';
         } else {
             // Test payment - only allowed in test mode (should be disabled in production)
             isTestMode = true;
-            transactionId = `TEST_${Date.now()}`;
+            transactionId = `TEST_${Date.now()}_${Math.random().toString(36).substring(7).toUpperCase()}`;
             status = 'captured';
         }
 
@@ -187,7 +194,7 @@ export async function POST(request: Request) {
         await adminClient.from('payments').insert({
             user_id: user.id,
             plan_id: planId,
-            amount: plan.price,
+            amount: finalAmount,
             currency: 'USD',
             status,
             razorpay_order_id: orderId,
@@ -199,7 +206,7 @@ export async function POST(request: Request) {
 
         // Create invoice record — use admin client
         const gstAmount = 0;
-        const totalAmount = plan.price;
+        const totalAmount = finalAmount;
         
         const { error: invoiceError } = await adminClient.from('invoices').insert({
             user_id: user.id,

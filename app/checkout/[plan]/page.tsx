@@ -13,7 +13,10 @@ import { loadRazorpay } from '@/lib/razorpay';
 import { toast } from 'sonner';
 import { validatePromoCode } from '@/app/actions/coupons';
 import { Input } from '@/components/ui/input';
-import { Tag } from 'lucide-react';
+import { Tag, CreditCard as StripeIcon } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import StripePaymentForm from '@/components/client/StripePaymentForm';
 
 interface Plan {
     id: string;
@@ -38,6 +41,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
     const [processing, setProcessing] = useState(false);
     const [razorpaySettings, setRazorpaySettings] = useState({ enabled: false, keyId: '' });
     const [paypalSettings, setPaypalSettings] = useState({ enabled: false, clientId: '', sandbox: false });
+    const [stripeSettings, setStripeSettings] = useState({ enabled: false, publishableKey: '', clientSecret: '' });
     const [user, setUser] = useState<any>(null);
     const [promoCode, setPromoCode] = useState('');
     const [appliedCode, setAppliedCode] = useState<{ code: string; discount: number; type: string } | null>(null);
@@ -50,20 +54,37 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
             if (!user) { router.push('/login?redirect=/checkout'); return; }
             setUser(user);
 
-            const [settingsRes, paypalRes, planRes] = await Promise.all([
+            const [settingsRes, paypalRes, stripeRes, planRes] = await Promise.all([
                 fetch('/api/settings/razorpay'),
                 fetch('/api/settings/paypal'),
+                fetch('/api/settings/stripe'),
                 fetch(`/api/plans/${resolvedParams.plan}`),
             ]);
-            const [settingsData, paypalData, planData] = await Promise.all([
-                settingsRes.json(), paypalRes.json(), planRes.json(),
+            const [settingsData, paypalData, stripeData, planResData] = await Promise.all([
+                settingsRes.json(), paypalRes.json(), stripeRes.json(), planRes.json(),
             ]);
 
             if (settingsData.success) setRazorpaySettings(settingsData.data);
             if (paypalData.success) setPaypalSettings(paypalData.data);
+            if (stripeData.success && stripeData.data) {
+                // Fetch Stripe client secret if enabled
+                if (stripeData.data.enabled) {
+                    const secretRes = await fetch('/api/stripe/create-payment-intent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ planId: resolvedParams.plan, amount: planResData.data?.price }),
+                    });
+                    const secretData = await secretRes.json();
+                    setStripeSettings({
+                        enabled: true,
+                        publishableKey: stripeData.data.publishableKey,
+                        clientSecret: secretData.clientSecret
+                    });
+                }
+            }
 
-            if (planData.success) {
-                setPlan(planData.data);
+            if (planResData.success) {
+                setPlan(planResData.data);
             } else {
                 toast.error('Plan not found');
                 router.push('/shop/plans');
@@ -232,6 +253,27 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
             if (res.success && res.data) {
                 setAppliedCode(res.data);
                 toast.success('Promo code applied successfully!');
+
+                // Refresh Stripe client secret with new amount if enabled
+                if (stripeSettings.enabled) {
+                    try {
+                        const secretRes = await fetch('/api/stripe/create-payment-intent', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                planId: plan.id, 
+                                amount: res.data.finalPrice,
+                                promoCode: promoCode 
+                            }),
+                        });
+                        const secretData = await secretRes.json();
+                        if (secretData.success) {
+                            setStripeSettings(prev => ({ ...prev, clientSecret: secretData.clientSecret }));
+                        }
+                    } catch (e) {
+                        console.error('Failed to refresh stripe secret', e);
+                    }
+                }
             } else {
                 toast.error(res.message || 'Invalid promo code');
             }
@@ -246,6 +288,49 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
         setAppliedCode(null);
         setPromoCode('');
         toast.info('Promo code removed');
+
+        // Refresh Stripe client secret with base amount if enabled
+        if (stripeSettings.enabled && plan) {
+            fetch('/api/stripe/create-payment-intent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    planId: plan.id, 
+                    amount: plan.price 
+                }),
+            }).then(res => res.json()).then(data => {
+                if (data.success) {
+                    setStripeSettings(prev => ({ ...prev, clientSecret: data.clientSecret }));
+                }
+            }).catch(e => console.error('Failed to refresh stripe secret', e));
+        }
+    };
+
+    const handleStripeSuccess = async (paymentId: string) => {
+        if (!plan) return;
+        setProcessing(true);
+        try {
+            const verifyRes = await fetch('/api/checkout/purchase', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    planId: plan.id,
+                    paymentMethod: 'stripe',
+                    razorpayPaymentId: paymentId,
+                    promoCode: appliedCode?.code
+                }),
+            });
+            const r = await verifyRes.json();
+            if (r.success) {
+                router.push(`/checkout/success?data=${encodeURIComponent(JSON.stringify(r.data))}`);
+            } else {
+                toast.error(r.error || 'Payment verification failed');
+            }
+        } catch {
+            toast.error('Something went wrong');
+        } finally {
+            setProcessing(false);
+        }
     };
 
     if (loading) {
@@ -268,7 +353,9 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
     const gst = 0;
     const discount = appliedCode?.discount || 0;
     const total = Math.max(0, plan.price - discount);
-    const anyLivePayment = razorpaySettings.enabled || paypalSettings.enabled;
+    const anyLivePayment = razorpaySettings.enabled || paypalSettings.enabled || stripeSettings.enabled;
+
+    const stripePromise = stripeSettings.publishableKey ? loadStripe(stripeSettings.publishableKey) : null;
 
     return (
         <>
@@ -470,11 +557,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                                             </Button>
                                         )}
 
-                                        {/* Divider when both enabled */}
-                                        {razorpaySettings.enabled && paypalSettings.enabled && (
-                                            <div className="flex items-center gap-3">
+                                        {/* Divider between Razorpay and others */}
+                                        {razorpaySettings.enabled && (paypalSettings.enabled || stripeSettings.enabled) && (
+                                            <div className="flex items-center gap-3 py-2">
                                                 <div className="flex-1 h-px bg-slate-200" />
-                                                <span className="text-xs text-slate-400 font-medium">OR</span>
+                                                <span className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Or</span>
                                                 <div className="flex-1 h-px bg-slate-200" />
                                             </div>
                                         )}
@@ -492,6 +579,38 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                                                     id="paypal-button-container"
                                                     className={processing ? 'opacity-40 pointer-events-none' : ''}
                                                 />
+                                            </div>
+                                        )}
+
+                                        {/* Stripe */}
+                                        {stripeSettings.enabled && stripeSettings.clientSecret && stripePromise && (
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex-1 h-px bg-slate-200" />
+                                                    <span className="text-xs text-slate-400 font-medium uppercase">Or pay with card</span>
+                                                    <div className="flex-1 h-px bg-slate-200" />
+                                                </div>
+                                                <Elements 
+                                                    stripe={stripePromise} 
+                                                    options={{ 
+                                                        clientSecret: stripeSettings.clientSecret,
+                                                        appearance: { 
+                                                            theme: 'stripe',
+                                                            variables: {
+                                                                colorPrimary: '#6366f1',
+                                                                colorBackground: '#f8fafc',
+                                                                borderRadius: '8px'
+                                                            }
+                                                        }
+                                                    }}
+                                                >
+                                                    <StripePaymentForm 
+                                                        total={total} 
+                                                        planId={plan?.id || ''} 
+                                                        promoCode={appliedCode?.code}
+                                                        onSuccess={handleStripeSuccess}
+                                                    />
+                                                </Elements>
                                             </div>
                                         )}
 
