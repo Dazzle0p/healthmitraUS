@@ -7,8 +7,12 @@ import Providers from './providers';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Healthmitra - Your Health, Our Priority',
-  description: 'Healthcare client dashboard for Healthmitra',
+  title: 'HealthMitra - Your Health, Our Priority',
+  description: 'Healthcare client dashboard for HealthMitra',
+  icons: {
+    icon: '/logo.jpg',
+    apple: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({
