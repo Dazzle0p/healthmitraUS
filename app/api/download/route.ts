@@ -350,20 +350,22 @@ function generateHTMLInvoice(invoice: any, purchase: any) {
         <div class="footer">
             <div class="footer-grid">
                 <div>
-                    <div class="footer-title">Company Details</div>
+                    <div class="footer-title">India Office</div>
                     <div class="footer-text">
                         HealthMitra Systems AI Pvt Ltd<br>
                         C/O JSS Academy of Technical Education<br>
                         C-20/1, Sector 62, Noida<br>
-                        Uttar Pradesh 201309, India
+                        Uttar Pradesh 201309, India<br>
+                        Phone: +91 9818823106
                     </div>
                 </div>
                 <div>
-                    <div class="footer-title">Contact & Support</div>
+                    <div class="footer-title">USA Office</div>
                     <div class="footer-text">
-                        Email: support@healthmitra.com<br>
-                        Phone: +91 9818823106<br>
-                        Website: www.healthmitra.com
+                        1550 Sheridan Drive, Buffalo<br>
+                        NY 14217, United States<br>
+                        Phone: 716-579-0346<br>
+                        Email: service@HealthMitraus.com
                     </div>
                 </div>
             </div>

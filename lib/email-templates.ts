@@ -268,10 +268,10 @@ export const planPurchaseConfirmationTemplate = ({ customerName, userId, passwor
   <p>Thank you for purchasing HealthMitra preventive healthcare membership <strong>${planName}</strong> for your family through our payment partner (${partnerName}) via transaction id (${transactionId}) for USD (${amount}).</p>
   <p>Below mentioned plan details are for your reference: ${planName}</p>
   <p>How to Use HealthMitra.co.in WebCRM: <a href="https://youtube.com/playlist?list=PLJ901-wtAm8ufH3GDhLxZOeb-zTfWBfCp&si=oOnp6JXsDw0JNLAb">Watch Playlist</a></p>
-  <p>To start utilizing HealthMitra services immediately, please download your e-card(s) using above login details. You can print a copy of your e-card(s). For any further assistance, please call our helpdesk at (+91) 9818823106.</p>
+  <p>To start utilizing HealthMitra services immediately, please download your e-card(s) using above login details. You can print a copy of your e-card(s). For any further assistance, please call our helpdesk at 716-579-0346 (USA) or +91 9818823106 (India).</p>
   <p>Linked Herein are the <a href="https://HealthMitraus.com/Refund-Cancellation">Terms and Conditions for Refund and Cancellation</a> for the HealthMitra.co.in Plan.</p>
-  <p><em>Validity of the E-card is viable until the validity date mentioned. For any further assistance, please call our helpdesk at +91 9818823106.</em></p>
-  <p><small>DISCLAIMER: This is an auto generated mail please do not reply to this email. In case you have any queries/clarifications, please email us at service@HealthMitraus.com or call our helpdesk at (+91) 9818823106 between 8 am to 8 pm.</small></p>
+  <p><em>Validity of the E-card is viable until the validity date mentioned. For any further assistance, please call our helpdesk at 716-579-0346 or +91 9818823106.</em></p>
+  <p><small>DISCLAIMER: This is an auto generated mail please do not reply to this email. In case you have any queries/clarifications, please email us at service@HealthMitraus.com or call our helpdesk at +91 9818823106 / 716-579-0346.</small></p>
   <br/>
   <p>Thanks and Regards,<br/><strong>Team HealthMitra</strong></p>
 </div>
@@ -295,7 +295,7 @@ export const planPurchaseWelcomeTemplate = ({ customerName, userId, password, pl
     <li><strong>Explore WebCRM:</strong> Learn how to use HealthMitra’s WebCRM by watching our video tutorials.</li>
   </ol>
   
-  <p>For any questions or further assistance, please don’t hesitate to reach out to our helpdesk at (+91) 9818823106 between 8 AM and 8 PM.</p>
+  <p>For any questions or further assistance, please don’t hesitate to reach out to our helpdesk at 716-579-0346 or +91 9818823106 between 8 AM and 8 PM.</p>
   <p>You can review the Terms and Conditions for Refund and Cancellation for your HealthMitra Plan at your convenience.</p>
   <p><small>Please note: This is an automated email; responses to this email are not monitored. For any inquiries, please contact us at service@HealthMitraus.com.</small></p>
   <p>Thank you for choosing HealthMitra. We are committed to supporting your family’s health and well-being.</p>
@@ -310,10 +310,10 @@ export const ewalletRefundInitiatedTemplate = ({ amount, utrNo, date }: any) => 
   <p>Greetings from HealthMitra.</p>
   <p>As communicated by our Claims Team, a HealthMitra Ewallet refund of USD ${amount} has been initiated and will be transferred to your account via UTR No. ${utrNo} from Bank of Baroda. Please note that it may take up to 3 working days for the payment to reflect in your account.</p>
   <p>The amount will be processed via NEFT by ${date}. We kindly request you to confirm once the payment has been credited to your account.</p>
-  <p>For any further assistance, please feel free to contact us at +91 9818823106 Or email us on Service@HealthMitra.co.in.</p>
+  <p>For any further assistance, please feel free to contact us at 716-579-0346 or +91 9818823106 Or email us on service@HealthMitraus.com or Service@HealthMitra.co.in.</p>
   <p>Thank you for your patience and understanding.</p>
   <br/>
-  <p>Best regards,<br/><strong>Customer Care Team HealthMitra</strong><br/>+91 9818823106</p>
+  <p>Best regards,<br/><strong>Customer Care Team HealthMitra</strong><br/>+91 9818823106 / 716-579-0346</p>
 </div>
 `;
 
