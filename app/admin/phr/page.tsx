@@ -49,9 +49,9 @@ export default function AdminPHRPage() {
                     </h1>
                     <p className="text-slate-500 text-sm mt-1">View and manage patient health records across all members.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Link href="/admin/phr/vendor">
-                        <Button variant="outline" className="border-teal-200 text-teal-700 hover:bg-teal-50">
+                <div className="flex w-full md:w-auto mt-4 md:mt-0">
+                    <Link href="/admin/phr/vendor" className="w-full sm:w-auto">
+                        <Button variant="outline" className="border-teal-200 text-teal-700 hover:bg-teal-50 w-full sm:w-auto">
                             <Upload className="mr-2 h-4 w-4" /> Vendor Portal
                         </Button>
                     </Link>
@@ -59,7 +59,7 @@ export default function AdminPHRPage() {
             </div>
 
             {/* Stats Dashboard */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="bg-white border-slate-200 shadow-sm">
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
@@ -139,7 +139,8 @@ export default function AdminPHRPage() {
                         <p>No patients found.</p>
                     </div>
                 ) : (
-                    <Table>
+                    <div className="overflow-x-auto w-full pb-2">
+                        <Table className="min-w-[800px]">
                         <TableHeader>
                             <TableRow className="bg-slate-50 border-slate-200">
                                 <TableHead className="text-slate-600 font-semibold">Patient</TableHead>
@@ -198,6 +199,7 @@ export default function AdminPHRPage() {
                             ))}
                         </TableBody>
                     </Table>
+                    </div>
                 )}
             </div>
         </div>

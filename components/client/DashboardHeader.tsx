@@ -29,6 +29,7 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
+    SheetClose,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -208,24 +209,25 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                                     const isActive = pathname === item.href;
                                     const Icon = item.icon;
                                     return (
-                                        <Link
-                                            key={item.href}
-                                            href={item.href}
-                                            className={cn(
-                                                "relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 mx-2",
-                                                isActive
-                                                    ? "bg-teal-50 text-teal-700 border-l-4 border-teal-600"
-                                                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                                            )}
-                                        >
-                                            <Icon className={cn("size-5", isActive ? "text-teal-600" : "text-slate-500")} />
-                                            {item.label}
-                                            {'badge' in item && item.badge && (
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
-                                                    {item.badge}
-                                                </span>
-                                            )}
-                                        </Link>
+                                        <SheetClose asChild key={item.href}>
+                                            <Link
+                                                href={item.href}
+                                                className={cn(
+                                                    "relative flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 mx-2",
+                                                    isActive
+                                                        ? "bg-teal-50 text-teal-700 border-l-4 border-teal-600"
+                                                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                                                )}
+                                            >
+                                                <Icon className={cn("size-5", isActive ? "text-teal-600" : "text-slate-500")} />
+                                                {item.label}
+                                                {'badge' in item && item.badge && (
+                                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-medium text-white">
+                                                        {item.badge}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </SheetClose>
                                     );
                                 })}
                             </nav>

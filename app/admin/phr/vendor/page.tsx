@@ -96,7 +96,7 @@ export default function VendorPortalPage() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                                 <Button
                                     variant={verifyMode === 'otp' ? 'default' : 'outline'}
                                     size="sm"
@@ -115,8 +115,8 @@ export default function VendorPortalPage() {
                                 </Button>
                             </div>
 
-                            <div className="flex gap-3 items-end">
-                                <div className="flex-1 space-y-1">
+                            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
+                                <div className="flex-1 space-y-1 w-full">
                                     <Label className="text-sm text-slate-600">
                                         {verifyMode === 'otp' ? 'Enter OTP sent to patient' : 'Enter ABHA ID'}
                                     </Label>
@@ -128,7 +128,7 @@ export default function VendorPortalPage() {
                                     />
                                     {verifyMode === 'otp' && <p className="text-xs text-slate-400">Demo: use OTP &quot;123456&quot;</p>}
                                 </div>
-                                <Button onClick={handleVerify} disabled={verifying || !verifyInput} className="bg-teal-600 hover:bg-teal-700 text-white">
+                                <Button onClick={handleVerify} disabled={verifying || !verifyInput} className="bg-teal-600 hover:bg-teal-700 text-white w-full sm:w-auto mt-2 sm:mt-0">
                                     {verifying ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
                                 </Button>
                             </div>
@@ -200,7 +200,8 @@ export default function VendorPortalPage() {
                             {auditLoading ? (
                                 <div className="flex items-center justify-center h-32"><Loader2 className="h-6 w-6 animate-spin text-teal-500" /></div>
                             ) : (
-                                <Table>
+                                <div className="overflow-x-auto w-full pb-2">
+                                <Table className="min-w-[600px]">
                                     <TableHeader>
                                         <TableRow className="bg-slate-50 border-slate-200">
                                             <TableHead className="text-slate-600 font-semibold">Vendor</TableHead>
@@ -232,6 +233,7 @@ export default function VendorPortalPage() {
                                         ))}
                                     </TableBody>
                                 </Table>
+                                </div>
                             )}
                         </CardContent>
                     </Card>

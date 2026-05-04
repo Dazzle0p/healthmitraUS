@@ -147,12 +147,12 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
 
     return (
         <div className="space-y-6 pb-10">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-800">My Purchased Plans</h1>
                     <p className="text-slate-500 text-sm">View plan details and manage policy holder information</p>
                 </div>
-                <Badge className="bg-slate-100 text-slate-600">
+                <Badge className="bg-slate-100 text-slate-600 shrink-0">
                     {allPurchases.length} Plan{allPurchases.length !== 1 ? 's' : ''}
                 </Badge>
             </div>
@@ -189,7 +189,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                 {members.map((member, idx) => (
                                     <div
                                         key={member.id}
-                                        className={`flex items-center justify-between p-3 rounded-lg border transition-all ${member.isLocked
+                                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border transition-all gap-3 ${member.isLocked
                                             ? 'bg-emerald-50 border-emerald-200'
                                             : 'bg-white border-amber-200 hover:border-amber-400 cursor-pointer'
                                             }`}
@@ -233,12 +233,12 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                 </p>
                             </div>
 
-                            <div className="mt-4 flex gap-3">
-                                <Button variant="outline" onClick={handleSaveProgress} className="border-amber-300 text-amber-700 hover:bg-amber-100">
+                            <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                                <Button variant="outline" onClick={handleSaveProgress} className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full sm:w-auto">
                                     Save Progress
                                 </Button>
                                 <Button
-                                    className="bg-amber-600 hover:bg-amber-700 text-white"
+                                    className="bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto"
                                     onClick={() => {
                                         const nextMember = members.find(m => !m.isLocked);
                                         if (nextMember) handleEditMember(nextMember);
@@ -310,12 +310,12 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-col sm:flex-row flex-wrap gap-2 mt-4 lg:mt-0 w-full lg:w-auto">
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleViewDetails(purchase)}
-                                        className="text-slate-600"
+                                        className="text-slate-600 w-full sm:w-auto"
                                     >
                                         <Eye size={14} className="mr-1" /> View Details
                                     </Button>
@@ -323,12 +323,12 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleManageMembers(purchase)}
-                                        className="text-slate-600"
+                                        className="text-slate-600 w-full sm:w-auto"
                                     >
                                         <Users size={14} className="mr-1" /> Manage Members
                                     </Button>
-                                    <Link href="/e-cards">
-                                        <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white">
+                                    <Link href="/e-cards" className="w-full sm:w-auto">
+                                        <Button size="sm" className="bg-teal-600 hover:bg-teal-700 text-white w-full">
                                             <Smartphone size={14} className="mr-1" /> Get E-Cards
                                         </Button>
                                     </Link>
@@ -391,16 +391,16 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                 </div>
 
                                 {/* Action Buttons for Expired */}
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-col sm:flex-row flex-wrap gap-2 mt-4 lg:mt-0 w-full lg:w-auto">
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleViewDetails(purchase)}
-                                        className="text-slate-500"
+                                        className="text-slate-500 w-full sm:w-auto"
                                     >
                                         <Eye size={14} className="mr-1" /> View Details
                                     </Button>
-                                    <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+                                    <Button size="sm" className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto">
                                         <RefreshCw size={14} className="mr-1" /> Renew Plan
                                     </Button>
                                 </div>
@@ -454,7 +454,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="p-4 bg-slate-50 rounded-lg">
                                     <p className="text-xs text-slate-500 uppercase">Start Date</p>
                                     <p className="font-bold text-slate-800">{formatDate(selectedPurchase.start_date)}</p>
@@ -490,20 +490,20 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                 </ul>
                             </div>
 
-                            <div className="flex gap-3">
-                                <Link href="/invoices" className="flex-1">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <Link href="/invoices" className="flex-1 w-full sm:w-auto">
                                     <Button variant="outline" className="w-full">
                                         <Download size={14} className="mr-2" /> Download Invoice
                                     </Button>
                                 </Link>
                                 {selectedPurchase.status === 'active' ? (
-                                    <Link href="/e-cards" className="flex-1">
+                                    <Link href="/e-cards" className="flex-1 w-full sm:w-auto">
                                         <Button className="w-full bg-teal-600 hover:bg-teal-700">
                                             Get E-Cards <ChevronRight size={14} className="ml-1" />
                                         </Button>
                                     </Link>
                                 ) : (
-                                    <Button className="flex-1 bg-orange-500 hover:bg-orange-600">
+                                    <Button className="flex-1 w-full sm:w-auto bg-orange-500 hover:bg-orange-600">
                                         <RefreshCw size={14} className="mr-2" /> Renew Plan
                                     </Button>
                                 )}
@@ -534,14 +534,14 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                             {members.map((member, idx) => (
                                 <div
                                     key={member.id}
-                                    className={`flex items-center justify-between p-3 rounded-lg border ${member.isLocked
+                                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-3 ${member.isLocked
                                         ? 'bg-emerald-50 border-emerald-200'
                                         : 'bg-white border-slate-200 hover:border-teal-300 cursor-pointer'
                                         }`}
                                     onClick={() => !member.isLocked && handleEditMember(member)}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${member.isLocked ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${member.isLocked ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'
                                             }`}>
                                             {member.isLocked ? <CheckCircle size={16} /> : idx + 1}
                                         </div>
@@ -553,19 +553,19 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                         </div>
                                     </div>
                                     {member.isLocked ? (
-                                        <Lock size={14} className="text-slate-400" />
+                                        <Lock size={14} className="text-slate-400 self-end sm:self-auto" />
                                     ) : (
-                                        <ChevronRight size={14} className="text-slate-400" />
+                                        <ChevronRight size={14} className="text-slate-400 self-end sm:self-auto" />
                                     )}
                                 </div>
                             ))}
                         </div>
 
-                        <div className="flex gap-3 pt-4">
-                            <Button variant="outline" onClick={() => setIsMemberWizardOpen(false)} className="flex-1">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                            <Button variant="outline" onClick={() => setIsMemberWizardOpen(false)} className="flex-1 w-full sm:w-auto">
                                 Close
                             </Button>
-                            <Link href="/e-cards" className="flex-1">
+                            <Link href="/e-cards" className="flex-1 w-full sm:w-auto">
                                 <Button className="w-full bg-teal-600 hover:bg-teal-700" disabled={!allMandatoryFilled}>
                                     <Smartphone size={14} className="mr-2" /> Generate E-Cards
                                 </Button>
@@ -595,7 +595,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Date of Birth <span className="text-red-500">*</span></Label>
                                 <Input
@@ -620,7 +620,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Blood Group <span className="text-red-500">*</span></Label>
                                 <Select value={memberForm.bloodGroup} onValueChange={(val) => setMemberForm(prev => ({ ...prev, bloodGroup: val }))}>
@@ -647,12 +647,12 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                             </div>
                         </div>
 
-                        <div className="flex gap-3 pt-4">
-                            <Button variant="outline" onClick={() => setIsMemberFormOpen(false)} className="flex-1">
+                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                            <Button variant="outline" onClick={() => setIsMemberFormOpen(false)} className="flex-1 w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            <Button onClick={handleSaveMember} className="flex-1 bg-teal-600 hover:bg-teal-700">
-                                <CheckCircle size={14} className="mr-2" /> Save & Lock
+                            <Button onClick={handleSaveMember} className="flex-1 w-full sm:w-auto bg-teal-600 hover:bg-teal-700">
+                                <CheckCircle size={14} className="mr-2 shrink-0" /> Save & Lock
                             </Button>
                         </div>
                     </div>

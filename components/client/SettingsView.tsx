@@ -39,15 +39,15 @@ export default function SettingsView() {
             title: "Account",
             items: [
                 { icon: User, label: "Profile Settings", description: "Name, email, phone, avatar", href: "/profile" },
-                { icon: Lock, label: "Change Password", description: "Update your password", href: "/settings?tab=security" },
-                { icon: Key, label: "Two-Factor Authentication", description: "Extra security layer", href: "/settings?tab=2fa" },
+                { icon: Lock, label: "Change Password", description: "Update your password", href: "/profile?tab=security" },
+                { icon: Key, label: "Two-Factor Authentication", description: "Extra security layer", href: "/profile?tab=security" },
             ]
         },
         {
             title: "Notifications",
             items: [
-                { icon: Bell, label: "Notification Preferences", description: "Email, SMS, push notifications", href: "/settings?tab=notifications" },
-                { icon: FileText, label: "Activity Logs", description: "View account activity", href: "/settings?tab=logs" },
+                { icon: Bell, label: "Notification Preferences", description: "Email, SMS, push notifications", href: "/profile?tab=preferences" },
+                { icon: FileText, label: "Activity Logs", description: "View login history", href: "/profile?tab=security" },
             ]
         },
         {
@@ -60,8 +60,8 @@ export default function SettingsView() {
         {
             title: "Health",
             items: [
-                { icon: Heart, label: "Medical Information", description: "Blood type, allergies, conditions", href: "/profile?tab=medical" },
-                { icon: User, label: "Emergency Contacts", description: "Add emergency contacts", href: "/profile?tab=emergency" },
+                { icon: Heart, label: "Medical Information", description: "Blood type, allergies, conditions", href: "/profile?tab=personal" },
+                { icon: User, label: "Emergency Contacts", description: "Add emergency contacts", href: "/profile?tab=personal" },
             ]
         }
     ];
