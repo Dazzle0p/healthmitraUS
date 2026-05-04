@@ -144,7 +144,7 @@ export default function AdminServiceRequestsPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 {[
                     { label: 'Total', value: stats.total, color: 'bg-slate-50 border-slate-200 text-slate-900' },
                     { label: 'Pending', value: stats.pending, color: 'bg-amber-50 border-amber-200 text-amber-700' },
@@ -160,7 +160,7 @@ export default function AdminServiceRequestsPage() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white border border-slate-200 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
+            <div className="bg-white border border-slate-200 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-start md:items-center shadow-sm">
                 <div className="relative w-full md:w-80">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input
@@ -219,7 +219,8 @@ export default function AdminServiceRequestsPage() {
                         <p>No service requests found.</p>
                     </div>
                 ) : (
-                    <Table>
+                    <div className="overflow-x-auto w-full pb-2">
+                        <Table className="min-w-[900px]">
                         <TableHeader>
                             <TableRow className="bg-slate-50 border-slate-200">
                                 <TableHead className="text-slate-600 font-semibold">ID</TableHead>
@@ -299,6 +300,7 @@ export default function AdminServiceRequestsPage() {
                             ))}
                         </TableBody>
                     </Table>
+                    </div>
                 )}
             </div>
 

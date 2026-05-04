@@ -132,11 +132,11 @@ export function DashboardView({ initialData }: DashboardViewProps) {
                             </span>
                         )}
                     </p>
-                    <div className="flex gap-3 flex-wrap">
-                        <Link href="/service-requests/new" className="btn-premium px-6 py-3 bg-white text-teal-700 font-bold rounded-xl shadow-lg hover:bg-teal-50 hover:scale-105 transition-all active:scale-95">
+                    <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                        <Link href="/service-requests/new" className="btn-premium px-6 py-3 bg-white text-teal-700 font-bold rounded-xl shadow-lg hover:bg-teal-50 hover:scale-105 transition-all active:scale-95 text-center w-full sm:w-auto">
                             Book Service
                         </Link>
-                        <Link href={data.activePlan?.id && data.activePlan?.id !== 'no-plan' ? '/my-purchases' : '/shop/plans'} className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all">
+                        <Link href={data.activePlan?.id && data.activePlan?.id !== 'no-plan' ? '/my-purchases' : '/shop/plans'} className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all text-center w-full sm:w-auto">
                             {data.activePlan?.id && data.activePlan?.id !== 'no-plan' ? 'View Plan' : 'Browse Plans'}
                         </Link>
                     </div>

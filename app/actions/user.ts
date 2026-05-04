@@ -149,3 +149,30 @@ export async function getUserInvoices() {
 
     return { success: true, data: invoices || [] };
 }
+
+export async function updatePassword(currentPassword: string, newPassword: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !user.email) return { success: false, error: 'Not authenticated' };
+
+    // Verify current password by attempting to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword
+    });
+
+    if (signInError) {
+        return { success: false, error: 'Incorrect current password' };
+    }
+
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword
+    });
+
+    if (error) {
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, message: 'Password updated successfully' };
+}

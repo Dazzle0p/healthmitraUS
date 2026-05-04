@@ -136,13 +136,13 @@ export default function UsersListingPage() {
                     </h1>
                     <p className="text-slate-500 text-sm mt-1">Manage all roles and permissions across the platform.</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" className="border-teal-600 text-teal-400 hover:bg-teal-900/10" onClick={handleExport} disabled={exporting}>
+                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto mt-4 md:mt-0">
+                    <Button variant="outline" className="border-teal-600 text-teal-400 hover:bg-teal-900/10 w-full sm:w-auto" onClick={handleExport} disabled={exporting}>
                         {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} 
                         {exporting ? 'Exporting...' : 'Export'}
                     </Button>
-                    <Link href="/admin/users/new">
-                        <Button className="bg-teal-600 hover:bg-teal-700 text-white">
+                    <Link href="/admin/users/new" className="w-full sm:w-auto">
+                        <Button className="bg-teal-600 hover:bg-teal-700 text-white w-full sm:w-auto">
                             <Plus className="mr-2 h-4 w-4" /> Add User
                         </Button>
                     </Link>
@@ -152,13 +152,15 @@ export default function UsersListingPage() {
             {/* Tabs & Filters */}
             <div className="space-y-4">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="bg-white text-slate-500 border border-slate-200">
+                    <div className="overflow-x-auto w-full pb-2">
+                        <TabsList className="bg-white text-slate-500 border border-slate-200 inline-flex min-w-max">
                         <TabsTrigger value="all" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700">All Users ({stats.total})</TabsTrigger>
                         <TabsTrigger value="customers" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700">Customers ({stats.customers})</TabsTrigger>
                         <TabsTrigger value="employees" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700">Employees ({stats.employees})</TabsTrigger>
                         <TabsTrigger value="admins" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700">Admins ({stats.admins})</TabsTrigger>
                         <TabsTrigger value="partners" className="data-[state=active]:bg-teal-50 data-[state=active]:text-teal-700">Partners ({stats.partners})</TabsTrigger>
-                    </TabsList>
+                        </TabsList>
+                    </div>
                 </Tabs>
 
                 <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -189,9 +191,9 @@ export default function UsersListingPage() {
             </div>
 
             {/* Table */}
-            <Card className="bg-white border-slate-200 overflow-hidden shadow-sm">
-                <CardContent className="p-0">
-                    <Table>
+            <Card className="bg-white border-slate-200 shadow-sm">
+                <CardContent className="p-0 overflow-x-auto w-full">
+                    <Table className="min-w-[800px]">
                         <TableHeader className="bg-slate-50">
                             <TableRow className="border-slate-200 hover:bg-transparent">
                                 <TableHead className="w-[80px] text-slate-700">Photo</TableHead>

@@ -81,7 +81,7 @@ export default function CategoriesPage() {
                 </div>
                 <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setEditingCategory(null); }}>
                     <DialogTrigger asChild>
-                        <Button className="bg-teal-600 hover:bg-teal-700 text-white" onClick={() => setEditingCategory({ status: 'active' })}>
+                        <Button className="bg-teal-600 hover:bg-teal-700 text-white w-full sm:w-auto mt-4 sm:mt-0" onClick={() => setEditingCategory({ status: 'active' })}>
                             <Plus className="mr-2 h-4 w-4" /> Add Category
                         </Button>
                     </DialogTrigger>
@@ -140,8 +140,8 @@ export default function CategoriesPage() {
 
             {/* Table */}
             <Card className="bg-white border-slate-200 shadow-sm">
-                <CardContent className="p-0">
-                    <Table>
+                <CardContent className="p-0 overflow-x-auto w-full">
+                    <Table className="min-w-[700px]">
                         <TableHeader className="bg-slate-50">
                             <TableRow className="border-slate-200 hover:bg-transparent">
                                 <TableHead className="w-[50px]"></TableHead>

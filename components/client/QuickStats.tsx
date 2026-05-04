@@ -42,7 +42,7 @@ export function QuickStats({
     return (
         <div className="space-y-6">
             {/* Row 1: Plan, E-Card, Wallet, Pending */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 stagger-children">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 stagger-children">
                 {/* Active Plan Card */}
                 <Link href="/my-purchases" className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-teal-500 to-cyan-500 p-5 text-white shadow-md transition-all duration-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer min-h-[160px]">
                     <div className="absolute top-0 right-0 p-4 opacity-10 transition-opacity group-hover:opacity-20">
@@ -95,7 +95,7 @@ export function QuickStats({
                             {eCard?.totalCards} cards issued
                         </p>
                     </div>
-                    <Button size="sm" className="mt-2 w-fit bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
+                    <Button size="sm" className="mt-4 w-full sm:w-fit bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
                         Download Card
                     </Button>
                 </Link>
@@ -112,11 +112,11 @@ export function QuickStats({
                         </div>
                         <p className="text-xs text-slate-500">Available Balance</p>
                     </div>
-                    <div className="flex items-center justify-between mt-2">
-                        <Button size="sm" variant="outline" className="h-8 border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors">
-                            <Plus className="mr-1 h-3 w-3" /> Add Money
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-4 gap-2">
+                        <Button size="sm" variant="outline" className="h-8 w-full sm:w-auto border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors">
+                            <Plus className="mr-1 h-3 w-3 shrink-0" /> Add Money
                         </Button>
-                        <span className="text-xs text-teal-600 font-medium group-hover:underline">
+                        <span className="text-xs text-teal-600 font-medium group-hover:underline self-start sm:self-auto">
                             History →
                         </span>
                     </div>
@@ -150,7 +150,7 @@ export function QuickStats({
             </div>
 
             {/* Row 2: Coverage, Quick Book, Emergency, Family */}
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 stagger-children">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 stagger-children">
                 {/* Total Coverage Card */}
                 <Link href="/my-purchases" className="group relative flex flex-col justify-between rounded-xl border border-rose-200 bg-gradient-to-br from-rose-50 to-red-50 p-5 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-[1.02] cursor-pointer min-h-[160px]">
                     <div>
@@ -175,9 +175,9 @@ export function QuickStats({
                         <h3 className="font-semibold text-slate-700">Book Service</h3>
                         <p className="mt-2 text-sm text-slate-500">Request a new service</p>
                     </div>
-                    <div className="mt-2">
+                    <div className="mt-4">
                         <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
-                            <Stethoscope className="mr-1 h-3 w-3" /> New Request
+                            <Stethoscope className="mr-1 h-3 w-3 shrink-0" /> New Request
                         </Button>
                     </div>
                 </Link>
@@ -189,9 +189,9 @@ export function QuickStats({
                         <h3 className="font-semibold text-slate-700">Emergency</h3>
                         <p className="mt-2 text-sm text-slate-500">24/7 Support Available</p>
                     </div>
-                    <div className="mt-2">
+                    <div className="mt-4">
                         <Button size="sm" variant="outline" className="w-full border-red-200 text-red-700 hover:bg-red-100">
-                            <Phone className="mr-1 h-3 w-3" /> Call Now
+                            <Phone className="mr-1 h-3 w-3 shrink-0" /> Call Now
                         </Button>
                     </div>
                 </Link>
