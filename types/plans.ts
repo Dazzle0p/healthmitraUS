@@ -54,6 +54,9 @@ export interface Plan {
     // Categories (linked)
     categoryIds: string[];
 
+    // System Allowed Services (Backend Access Control)
+    allowed_services?: string[];
+
     // Services
     services: PlanService[];
 

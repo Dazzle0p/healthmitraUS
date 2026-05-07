@@ -50,6 +50,28 @@ export async function createServiceRequest(data: { type: string; memberId?: stri
 
     if (!user) return { success: false, error: 'Not authenticated' };
 
+    // Validate access against user's active plans
+    const today = new Date().toISOString().split('T')[0];
+    const { data: memberPlans, error: planError } = await adminClient
+        .from('ecard_members')
+        .select('*, plans(allowed_services)')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .gte('valid_till', today)
+        .lte('valid_from', today);
+        
+    let allAllowedServices: string[] = [];
+    if (memberPlans && memberPlans.length > 0) {
+        memberPlans.forEach((m: any) => {
+            const planServices = m.plans?.allowed_services || [];
+            allAllowedServices = [...allAllowedServices, ...planServices];
+        });
+    }
+
+    if (!allAllowedServices.includes(data.type)) {
+        return { success: false, error: 'Unauthorized: You do not have an active subscription for this service.' };
+    }
+
     // Generate request_id_display using UUID to avoid race conditions
     // Format: SR-YYYY-XXXXXX where XXXXXX is first 6 chars of UUID (ensures uniqueness)
     const year = new Date().getFullYear();

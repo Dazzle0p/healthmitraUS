@@ -16,10 +16,18 @@ interface Plan {
     description: string;
     price: number;
     duration_days: number;
-    features: string[];
+    allowed_services: string[];
     is_active: boolean;
     is_featured: boolean;
 }
+
+const SYSTEM_SERVICES_MAP: Record<string, string> = {
+    'ambulance': 'Ambulance',
+    'medical_consultation': 'Doctor Consultation',
+    'diagnostic': 'Lab Tests / Diagnostic',
+    'caretaker': 'Caretaker',
+    'nursing': 'Nursing',
+};
 
 export default function ShopPlansPage() {
     const router = useRouter();
@@ -122,10 +130,10 @@ export default function ShopPlansPage() {
                                     </div>
                                     
                                     <ul className="space-y-3 mb-8">
-                                        {(plan.features || []).slice(0, 6).map((feature, idx) => (
+                                        {(plan.allowed_services || []).map((serviceId, idx) => (
                                             <li key={idx} className="flex items-start gap-3 text-sm">
                                                 <Check className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
-                                                <span className="text-slate-600">{feature}</span>
+                                                <span className="text-slate-600">{SYSTEM_SERVICES_MAP[serviceId] || serviceId}</span>
                                             </li>
                                         ))}
                                     </ul>
