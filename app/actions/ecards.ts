@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { _addFamilyMember } from "./customers";
 
 export async function getECards() {
     const supabase = await createClient();
@@ -108,6 +109,7 @@ export async function getMyPurchases() {
         
         return {
             id: m.id, // Use member ID as the purchase ID
+            plan_id: m.plans?.id || m.plan_id,
             plan_name: planName,
             status: status,
             coverage_amount: m.coverage_amount || m.plans?.coverage_amount || 0,
@@ -119,6 +121,7 @@ export async function getMyPurchases() {
             member_name: m.full_name,
             relation: m.relation,
             card_number: m.card_unique_id,
+            max_members: m.plans?.member_count_max || 4,
             isFirstPurchase: m.relation === 'Self'
         };
     });
@@ -135,6 +138,7 @@ export async function getMyPurchases() {
             const existing = groupedMap.get(key);
             existing.family_members = existing.family_members || [];
             existing.family_members.push({
+                id: p.id,
                 name: p.member_name,
                 relation: p.relation
             });
@@ -204,4 +208,19 @@ export async function getPurchaseDetail(id: string) {
             }
         }
     };
+}
+
+export async function addUserFamilyMember(planId: string, memberData: any) {
+    const supabase = await createClient();
+    const adminSupabase = await createAdminClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return { success: false, error: 'Not authenticated' };
+
+    try {
+        await _addFamilyMember(adminSupabase, user.id, planId, memberData);
+        return { success: true, message: 'Family member added successfully' };
+    } catch (err: any) {
+        return { success: false, error: err.message || 'Failed to add family member' };
+    }
 }

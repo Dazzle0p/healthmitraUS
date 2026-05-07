@@ -97,38 +97,35 @@ export async function fetchDashboardData(): Promise<
     const members = membersRes.data || [];
     const activeMembers = members.filter((m: any) => m.status === "active");
 
-    // Calculate Active Plan (Logic: Find first active member with a plan)
-    const primaryMember =
-      members.find((m: any) => m.relation === "Self") || members[0];
-    const activePlanData = primaryMember?.plans || null;
-
-    // Safely calculate days remaining
-    let daysRemaining = 0;
-    if (primaryMember?.valid_till) {
-      const validTillDate = new Date(primaryMember.valid_till);
-      if (!isNaN(validTillDate.getTime())) {
-        daysRemaining = Math.max(
-          0,
-          Math.ceil(
-            (validTillDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-          ),
-        );
-      }
-    }
-
-    const activePlan = activePlanData
-      ? {
-          id: activePlanData.id,
-          name: activePlanData.name,
-          status: primaryMember.status,
-          validUntil: primaryMember.valid_till,
-          daysRemaining,
-          coverageAmount:
-            primaryMember.coverage_amount ||
-            activePlanData.coverage_amount ||
+    // Calculate Active Plans (Logic: Find all active members for Self with a plan)
+    const selfMembers = activeMembers.filter((m: any) => m.relation === "Self" && m.plans);
+    
+    const activePlans = selfMembers.map((member: any) => {
+      const planData = member.plans;
+      let daysRemaining = 0;
+      if (member.valid_till) {
+        const validTillDate = new Date(member.valid_till);
+        if (!isNaN(validTillDate.getTime())) {
+          daysRemaining = Math.max(
             0,
+            Math.ceil(
+              (validTillDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+            )
+          );
         }
-      : null;
+      }
+      return {
+        id: planData.id,
+        name: planData.name,
+        status: member.status,
+        validUntil: member.valid_till,
+        daysRemaining,
+        coverageAmount:
+          member.coverage_amount ||
+          planData.coverage_amount ||
+          0,
+      };
+    });
 
     // Recent Activity Merger with safe timestamp handling
     const recentActivity = [
@@ -199,14 +196,7 @@ export async function fetchDashboardData(): Promise<
           phone: profile.phone || "",
           avatar: profile.avatar_url || "",
         },
-        activePlan: activePlan || {
-          id: "no-plan",
-          name: "No Active Plan",
-          status: "inactive",
-          validUntil: new Date().toISOString(),
-          daysRemaining: 0,
-          coverageAmount: 0,
-        },
+        activePlans,
         eCardStatus: {
           status: (activeMembers.length > 0 ? "active" : "pending") as
             | "active"

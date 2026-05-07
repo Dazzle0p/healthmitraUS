@@ -187,7 +187,7 @@ async function _assignPlan(
 }
 
 // --- INTERNAL: Add Family Member ---
-async function _addFamilyMember(
+export async function _addFamilyMember(
     adminSupabase: any,
     userId: string,
     planId: string | null,
@@ -203,6 +203,9 @@ async function _addFamilyMember(
             .select('valid_from, valid_till')
             .eq('user_id', userId)
             .eq('relation', 'Self')
+            .eq('plan_id', planId)
+            .order('created_at', { ascending: false })
+            .limit(1)
             .single();
 
         if (selfMember) {
@@ -249,14 +252,6 @@ export async function assignPlanToCustomer(
         .single();
 
     if (!profile) return { success: false, error: 'Customer not found' };
-
-    // Expire any existing active self member records
-    await adminSupabase
-        .from('ecard_members')
-        .update({ status: 'expired' })
-        .eq('user_id', userId)
-        .eq('relation', 'Self')
-        .eq('status', 'active');
 
     const result = await _assignPlan(adminSupabase, userId, profile.full_name, planId, validFrom);
     return result;

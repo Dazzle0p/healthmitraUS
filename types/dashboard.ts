@@ -89,7 +89,7 @@ export interface Notification {
 
 export interface DashboardData {
     user: User;
-    activePlan: ActivePlan;
+    activePlans: ActivePlan[];
     eCardStatus: ECardStatusData;
     wallet: WalletData;
     vouchers: VoucherData;

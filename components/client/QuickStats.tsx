@@ -15,7 +15,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 interface QuickStatsProps {
-    plan?: ActivePlan;
+    plans?: ActivePlan[];
     eCard?: ECardStatusData;
     wallet?: WalletData;
     pending?: PendingRequests;
@@ -27,8 +27,16 @@ interface QuickStatsProps {
 }
 
 export function QuickStats({
-    plan, eCard, wallet, pending, vouchers, services, members, reimbursement, loading
+    plans = [], eCard, wallet, pending, vouchers, services, members, reimbursement, loading
 }: QuickStatsProps) {
+    const totalCoverage = plans.reduce((sum, p) => sum + (p.coverageAmount || 0), 0);
+    const maxDaysRemaining = plans.length > 0 ? Math.max(...plans.map(p => p.daysRemaining || 0)) : 0;
+    const furthestPlan = plans.length > 0 ? plans.reduce((prev, current) => {
+        const prevDate = new Date(prev.validUntil).getTime();
+        const currentDate = new Date(current.validUntil).getTime();
+        return currentDate > prevDate ? current : prev;
+    }) : null;
+
     if (loading) {
         return (
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
@@ -51,20 +59,22 @@ export function QuickStats({
                     <div className="relative z-10 flex h-full flex-col justify-between">
                         <div>
                             <ShieldCheck className="mb-3 h-10 w-10 text-white/90" />
-                            <h3 className="text-lg font-semibold">{plan?.name || "No Active Plan"}</h3>
+                            <h3 className="text-lg font-semibold">
+                                {plans.length === 0 ? "No Active Plan" : plans.length === 1 ? plans[0].name : "Multiple Plans Active"}
+                            </h3>
                         </div>
-                        {plan?.validUntil && !isNaN(new Date(plan.validUntil).getTime()) ? (
+                        {furthestPlan?.validUntil && !isNaN(new Date(furthestPlan.validUntil).getTime()) ? (
                             <div className="space-y-1">
                                 <p className="text-xs text-cyan-100">Valid until</p>
                                 <p className="text-sm font-medium">
-                                    {new Date(plan.validUntil).toLocaleDateString("en-US", {
+                                    {new Date(furthestPlan.validUntil).toLocaleDateString("en-US", {
                                         year: "numeric",
                                         month: "short",
                                         day: "numeric"
                                     })}
                                 </p>
                                 <p className="text-xs text-emerald-100 font-medium">
-                                    ({plan.daysRemaining} days left)
+                                    ({maxDaysRemaining} days left)
                                 </p>
                             </div>
                         ) : null}
@@ -158,7 +168,7 @@ export function QuickStats({
                         <h3 className="font-semibold text-slate-700">Total Coverage</h3>
                         <div className="mt-2 flex items-baseline gap-1">
                             <span className="text-2xl font-bold text-rose-600">
-                                ${(plan?.coverageAmount || 0).toLocaleString("en-US")}
+                                ${totalCoverage.toLocaleString("en-US")}
                             </span>
                         </div>
                         <p className="text-xs text-slate-500 mt-1">Health protection</p>
