@@ -34,6 +34,7 @@ export default function ShopPlansPage() {
     const [plans, setPlans] = useState<Plan[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectingPlan, setSelectingPlan] = useState<string | null>(null);
+    const [activePlanIds, setActivePlanIds] = useState<string[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -52,7 +53,24 @@ export default function ShopPlansPage() {
             setLoading(false);
         };
 
+        const fetchUserActivePlans = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: members } = await supabase
+                    .from('ecard_members')
+                    .select('plan_id')
+                    .eq('user_id', user.id)
+                    .eq('relation', 'Self')
+                    .eq('status', 'active');
+                
+                if (members) {
+                    setActivePlanIds(members.map(m => m.plan_id).filter(Boolean));
+                }
+            }
+        };
+
         fetchPlans();
+        fetchUserActivePlans();
     }, []);
 
     const handleSelectPlan = async (planId: string) => {
@@ -140,11 +158,15 @@ export default function ShopPlansPage() {
                                     
                                     <Button 
                                         onClick={() => handleSelectPlan(plan.id)}
-                                        disabled={selectingPlan === plan.id}
-                                        className={`w-full ${plan.is_featured ? 'bg-teal-600 hover:bg-teal-700' : 'bg-slate-900 hover:bg-slate-800'}`}
+                                        disabled={selectingPlan === plan.id || activePlanIds.includes(plan.id)}
+                                        className={`w-full ${activePlanIds.includes(plan.id) ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100 cursor-default border-emerald-200' : plan.is_featured ? 'bg-teal-600 hover:bg-teal-700' : 'bg-slate-900 hover:bg-slate-800'}`}
                                     >
                                         {selectingPlan === plan.id ? (
                                             <>Processing...</>
+                                        ) : activePlanIds.includes(plan.id) ? (
+                                            <>
+                                                Already Active <Check className="ml-2 w-4 h-4" />
+                                            </>
                                         ) : (
                                             <>
                                                 Buy Now <ArrowRight className="ml-2 w-4 h-4" />

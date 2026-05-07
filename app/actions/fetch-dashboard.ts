@@ -76,17 +76,19 @@ export async function fetchDashboardData(): Promise<
         ? results[5].value
         : { data: null, error: results[5].reason };
 
+    // Helper to safely log errors ignoring PGRST116 (No rows returned)
+    const logError = (name: string, err: any) => {
+      if (err?.code === "PGRST116") return; // Ignore missing rows, we use fallbacks
+      console.error(`${name} fetch error:`, err?.message || err);
+    };
+
     // Log any errors but continue with defaults
-    if (profileRes.error)
-      console.error("Profile fetch error:", profileRes.error);
-    if (walletRes.error) console.error("Wallet fetch error:", walletRes.error);
-    if (membersRes.error)
-      console.error("Members fetch error:", membersRes.error);
-    if (requestsRes.error)
-      console.error("Requests fetch error:", requestsRes.error);
-    if (claimsRes.error) console.error("Claims fetch error:", claimsRes.error);
-    if (notifsRes.error)
-      console.error("Notifications fetch error:", notifsRes.error);
+    if (profileRes.error) logError("Profile", profileRes.error);
+    if (walletRes.error) logError("Wallet", walletRes.error);
+    if (membersRes.error) logError("Members", membersRes.error);
+    if (requestsRes.error) logError("Requests", requestsRes.error);
+    if (claimsRes.error) logError("Claims", claimsRes.error);
+    if (notifsRes.error) logError("Notifications", notifsRes.error);
 
     const profile = profileRes.data || {
       full_name: user.email?.split("@")[0],
