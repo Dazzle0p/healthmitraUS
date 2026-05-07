@@ -24,11 +24,19 @@ interface Plan {
     description: string;
     price: number;
     duration_days: number;
-    features: string[];
+    allowed_services: string[];
     is_active: boolean;
     is_featured: boolean;
     coverage_amount?: number;
 }
+
+const SYSTEM_SERVICES_MAP: Record<string, string> = {
+    'ambulance': 'Ambulance',
+    'medical_consultation': 'Doctor Consultation',
+    'diagnostic': 'Lab Tests / Diagnostic',
+    'caretaker': 'Caretaker',
+    'nursing': 'Nursing',
+};
 
 export default function CheckoutPage({ params }: { params: Promise<{ plan: string }> }) {
     const resolvedParams = use(params);
@@ -422,19 +430,19 @@ export default function CheckoutPage({ params }: { params: Promise<{ plan: strin
                             </Card>
 
                             {/* Features */}
-                            {(plan.features || []).length > 0 && (
+                            {(plan.allowed_services || []).length > 0 && (
                                 <Card className="border border-slate-200 shadow-sm">
                                     <CardHeader className="pb-3">
-                                        <CardTitle className="text-base text-slate-800">What&apos;s Included</CardTitle>
+                                        <CardTitle className="text-base text-slate-800">What&apos;s Included (Access Controls)</CardTitle>
                                     </CardHeader>
                                     <CardContent className="pt-0">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                            {(plan.features || []).slice(0, 8).map((feature, idx) => (
+                                            {(plan.allowed_services || []).map((serviceId, idx) => (
                                                 <div key={idx} className="flex items-center gap-2.5 text-sm text-slate-600 py-1">
                                                     <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
                                                         <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
                                                     </div>
-                                                    {feature}
+                                                    {SYSTEM_SERVICES_MAP[serviceId] || serviceId}
                                                 </div>
                                             ))}
                                         </div>

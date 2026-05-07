@@ -76,17 +76,19 @@ export async function fetchDashboardData(): Promise<
         ? results[5].value
         : { data: null, error: results[5].reason };
 
+    // Helper to safely log errors ignoring PGRST116 (No rows returned)
+    const logError = (name: string, err: any) => {
+      if (err?.code === "PGRST116") return; // Ignore missing rows, we use fallbacks
+      console.error(`${name} fetch error:`, err?.message || err);
+    };
+
     // Log any errors but continue with defaults
-    if (profileRes.error)
-      console.error("Profile fetch error:", profileRes.error);
-    if (walletRes.error) console.error("Wallet fetch error:", walletRes.error);
-    if (membersRes.error)
-      console.error("Members fetch error:", membersRes.error);
-    if (requestsRes.error)
-      console.error("Requests fetch error:", requestsRes.error);
-    if (claimsRes.error) console.error("Claims fetch error:", claimsRes.error);
-    if (notifsRes.error)
-      console.error("Notifications fetch error:", notifsRes.error);
+    if (profileRes.error) logError("Profile", profileRes.error);
+    if (walletRes.error) logError("Wallet", walletRes.error);
+    if (membersRes.error) logError("Members", membersRes.error);
+    if (requestsRes.error) logError("Requests", requestsRes.error);
+    if (claimsRes.error) logError("Claims", claimsRes.error);
+    if (notifsRes.error) logError("Notifications", notifsRes.error);
 
     const profile = profileRes.data || {
       full_name: user.email?.split("@")[0],
@@ -97,38 +99,35 @@ export async function fetchDashboardData(): Promise<
     const members = membersRes.data || [];
     const activeMembers = members.filter((m: any) => m.status === "active");
 
-    // Calculate Active Plan (Logic: Find first active member with a plan)
-    const primaryMember =
-      members.find((m: any) => m.relation === "Self") || members[0];
-    const activePlanData = primaryMember?.plans || null;
-
-    // Safely calculate days remaining
-    let daysRemaining = 0;
-    if (primaryMember?.valid_till) {
-      const validTillDate = new Date(primaryMember.valid_till);
-      if (!isNaN(validTillDate.getTime())) {
-        daysRemaining = Math.max(
-          0,
-          Math.ceil(
-            (validTillDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-          ),
-        );
-      }
-    }
-
-    const activePlan = activePlanData
-      ? {
-          id: activePlanData.id,
-          name: activePlanData.name,
-          status: primaryMember.status,
-          validUntil: primaryMember.valid_till,
-          daysRemaining,
-          coverageAmount:
-            primaryMember.coverage_amount ||
-            activePlanData.coverage_amount ||
+    // Calculate Active Plans (Logic: Find all active members for Self with a plan)
+    const selfMembers = activeMembers.filter((m: any) => m.relation === "Self" && m.plans);
+    
+    const activePlans = selfMembers.map((member: any) => {
+      const planData = member.plans;
+      let daysRemaining = 0;
+      if (member.valid_till) {
+        const validTillDate = new Date(member.valid_till);
+        if (!isNaN(validTillDate.getTime())) {
+          daysRemaining = Math.max(
             0,
+            Math.ceil(
+              (validTillDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+            )
+          );
         }
-      : null;
+      }
+      return {
+        id: planData.id,
+        name: planData.name,
+        status: member.status,
+        validUntil: member.valid_till,
+        daysRemaining,
+        coverageAmount:
+          member.coverage_amount ||
+          planData.coverage_amount ||
+          0,
+      };
+    });
 
     // Recent Activity Merger with safe timestamp handling
     const recentActivity = [
@@ -199,14 +198,7 @@ export async function fetchDashboardData(): Promise<
           phone: profile.phone || "",
           avatar: profile.avatar_url || "",
         },
-        activePlan: activePlan || {
-          id: "no-plan",
-          name: "No Active Plan",
-          status: "inactive",
-          validUntil: new Date().toISOString(),
-          daysRemaining: 0,
-          coverageAmount: 0,
-        },
+        activePlans,
         eCardStatus: {
           status: (activeMembers.length > 0 ? "active" : "pending") as
             | "active"

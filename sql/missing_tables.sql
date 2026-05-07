@@ -803,3 +803,37 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 -- VERIFICATION
 -- =============================================================================
 SELECT 'Tables created successfully!' as status;
+
+
+-- ===== SUBSCRIPTION ACCESS CONTROL & PLAN CATEGORIES =====
+
+-- 1. Create plan_categories table if it doesn't exist
+CREATE TABLE IF NOT EXISTS plan_categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    description TEXT,
+    icon TEXT,
+    status TEXT DEFAULT 'active',
+    display_order INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Seed basic categories
+INSERT INTO plan_categories (name, status) 
+VALUES 
+    ('Consultation', 'active'),
+    ('Diagnostics', 'active'),
+    ('Mental Health', 'active'),
+    ('Wellness', 'active')
+ON CONFLICT DO NOTHING;
+
+-- 2. Update plans table
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS allowed_services JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE plans ADD COLUMN IF NOT EXISTS category_ids JSONB DEFAULT '[]'::jsonb;
+
+-- 3. Remove unique constraint on user_id in ecard_members (if it exists accidentally)
+-- Note: ecard_members should allow multiple plans per user.
+-- By default, member_id_code and card_unique_id are UNIQUE, which is fine as they are generated per membership.
+
+

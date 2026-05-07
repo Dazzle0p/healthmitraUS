@@ -16,16 +16,25 @@ interface Plan {
     description: string;
     price: number;
     duration_days: number;
-    features: string[];
+    allowed_services: string[];
     is_active: boolean;
     is_featured: boolean;
 }
+
+const SYSTEM_SERVICES_MAP: Record<string, string> = {
+    'ambulance': 'Ambulance',
+    'medical_consultation': 'Doctor Consultation',
+    'diagnostic': 'Lab Tests / Diagnostic',
+    'caretaker': 'Caretaker',
+    'nursing': 'Nursing',
+};
 
 export default function ShopPlansPage() {
     const router = useRouter();
     const [plans, setPlans] = useState<Plan[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectingPlan, setSelectingPlan] = useState<string | null>(null);
+    const [activePlanIds, setActivePlanIds] = useState<string[]>([]);
     const supabase = createClient();
 
     useEffect(() => {
@@ -44,7 +53,24 @@ export default function ShopPlansPage() {
             setLoading(false);
         };
 
+        const fetchUserActivePlans = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: members } = await supabase
+                    .from('ecard_members')
+                    .select('plan_id')
+                    .eq('user_id', user.id)
+                    .eq('relation', 'Self')
+                    .eq('status', 'active');
+                
+                if (members) {
+                    setActivePlanIds(members.map(m => m.plan_id).filter(Boolean));
+                }
+            }
+        };
+
         fetchPlans();
+        fetchUserActivePlans();
     }, []);
 
     const handleSelectPlan = async (planId: string) => {
@@ -122,21 +148,25 @@ export default function ShopPlansPage() {
                                     </div>
                                     
                                     <ul className="space-y-3 mb-8">
-                                        {(plan.features || []).slice(0, 6).map((feature, idx) => (
+                                        {(plan.allowed_services || []).map((serviceId, idx) => (
                                             <li key={idx} className="flex items-start gap-3 text-sm">
                                                 <Check className="w-5 h-5 text-teal-500 shrink-0 mt-0.5" />
-                                                <span className="text-slate-600">{feature}</span>
+                                                <span className="text-slate-600">{SYSTEM_SERVICES_MAP[serviceId] || serviceId}</span>
                                             </li>
                                         ))}
                                     </ul>
                                     
                                     <Button 
                                         onClick={() => handleSelectPlan(plan.id)}
-                                        disabled={selectingPlan === plan.id}
-                                        className={`w-full ${plan.is_featured ? 'bg-teal-600 hover:bg-teal-700' : 'bg-slate-900 hover:bg-slate-800'}`}
+                                        disabled={selectingPlan === plan.id || activePlanIds.includes(plan.id)}
+                                        className={`w-full ${activePlanIds.includes(plan.id) ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-100 cursor-default border-emerald-200' : plan.is_featured ? 'bg-teal-600 hover:bg-teal-700' : 'bg-slate-900 hover:bg-slate-800'}`}
                                     >
                                         {selectingPlan === plan.id ? (
                                             <>Processing...</>
+                                        ) : activePlanIds.includes(plan.id) ? (
+                                            <>
+                                                Already Active <Check className="ml-2 w-4 h-4" />
+                                            </>
                                         ) : (
                                             <>
                                                 Buy Now <ArrowRight className="ml-2 w-4 h-4" />

@@ -16,14 +16,7 @@ const DEFAULT_EMPTY_DATA: DashboardData = {
         phone: "",
         avatar: "",
     },
-    activePlan: {
-        id: "no-plan",
-        name: "No Active Plan",
-        status: "expired" as const,
-        validUntil: "",
-        daysRemaining: 0,
-        coverageAmount: 0,
-    },
+    activePlans: [],
     eCardStatus: {
         status: "pending" as const,
         totalCards: 0,
@@ -103,7 +96,8 @@ export function DashboardView({ initialData }: DashboardViewProps) {
     };
 
     const firstName = data.user.name?.split(' ')[0] || 'User';
-    const hasActivePlan = data.activePlan?.id && data.activePlan?.id !== 'no-plan';
+    const hasActivePlan = data.activePlans && data.activePlans.length > 0;
+    const planNames = data.activePlans?.map(p => p.name).join(', ') || '';
 
     return (
         <div className="space-y-10">
@@ -122,9 +116,9 @@ export function DashboardView({ initialData }: DashboardViewProps) {
                         Welcome back, {firstName}!
                     </h1>
                     <p className="text-lg mb-6">
-                        {data.activePlan?.id && data.activePlan?.id !== 'no-plan' ? (
+                        {hasActivePlan ? (
                             <span className="text-teal-50/90">
-                                Your health coverage is <span className="font-bold text-white bg-green-500/30 px-2 py-0.5 rounded">ACTIVE</span>. You have <span className="font-bold text-white">{data.notifications.filter(n => !n.isRead).length} new notifications</span>.
+                                You have {data.activePlans.length} active <span className="font-bold text-white bg-green-500/30 px-2 py-0.5 rounded">PLAN{data.activePlans.length > 1 ? 'S' : ''}</span>. You have <span className="font-bold text-white">{data.notifications.filter(n => !n.isRead).length} new notifications</span>.
                             </span>
                         ) : (
                             <span className="text-red-200">
@@ -136,8 +130,8 @@ export function DashboardView({ initialData }: DashboardViewProps) {
                         <Link href="/service-requests/new" className="btn-premium px-6 py-3 bg-white text-teal-700 font-bold rounded-xl shadow-lg hover:bg-teal-50 hover:scale-105 transition-all active:scale-95 text-center w-full sm:w-auto">
                             Book Service
                         </Link>
-                        <Link href={data.activePlan?.id && data.activePlan?.id !== 'no-plan' ? '/my-purchases' : '/shop/plans'} className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all text-center w-full sm:w-auto">
-                            {data.activePlan?.id && data.activePlan?.id !== 'no-plan' ? 'View Plan' : 'Browse Plans'}
+                        <Link href={hasActivePlan ? '/my-purchases' : '/shop/plans'} className="px-6 py-3 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all text-center w-full sm:w-auto">
+                            {hasActivePlan ? 'Manage Plans' : 'Browse Plans'}
                         </Link>
                     </div>
                 </div>
@@ -146,7 +140,7 @@ export function DashboardView({ initialData }: DashboardViewProps) {
             {/* 2. Quick Stats - Now with 8 cards */}
             <div className="animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <QuickStats
-                    plan={data.activePlan}
+                    plans={data.activePlans}
                     eCard={data.eCardStatus}
                     wallet={data.wallet}
                     pending={data.pendingRequests}

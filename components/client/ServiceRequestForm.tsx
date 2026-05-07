@@ -159,31 +159,7 @@ function TermsModal({
         },
       ],
     },
-    medicine: {
-      title: "Terms & Conditions for Medicine Delivery",
-      sections: [
-        {
-          title: "1. Prescription Validity",
-          content:
-            "All prescription medicines require a valid doctor's prescription (issued within last 6 months). We reserve the right to verify prescription authenticity with the prescribing doctor.",
-        },
-        {
-          title: "2. Delivery Policy",
-          content:
-            "Standard delivery: 2-4 hours. Express delivery: 30-60 minutes (additional $50). Free delivery on orders above $500. Delivery available within 5km of partner pharmacies.",
-        },
-        {
-          title: "3. Return & Refund",
-          content:
-            "Medicines cannot be returned once delivered due to safety regulations. Only damaged or expired products can be replaced within 24 hours of delivery.",
-        },
-        {
-          title: "4. Over-the-Counter (OTC) Products",
-          content:
-            "OTC products can be purchased without prescription but are subject to availability. Returns accepted within 7 days if unopened and sealed.",
-        },
-      ],
-    },
+
     caretaker: {
       title: "Terms & Conditions for Caretaker Services",
       sections: [
@@ -350,11 +326,6 @@ const formSchema = z.object({
   isFasting: z.string().optional(),
   lastMealTime: z.string().optional(),
 
-  // Medicine fields
-  prescriptionFile: z.any().optional(),
-  deliveryType: z.string().optional(),
-  deliveryAddress: z.string().optional(),
-  medicinesList: z.string().optional(),
 
   // Caretaker/Nursing
   serviceType: z.string().optional(),
@@ -369,6 +340,7 @@ interface ServiceRequestFormProps {
   initialType?: string;
   userProfile?: any;
   vouchers?: { code: string; value: number; description: string }[];
+  allowedServices?: string[];
 }
 
 const NEARBY_HOSPITALS = [
@@ -410,20 +382,26 @@ export function ServiceRequestForm({
   initialType,
   userProfile,
   vouchers = [],
+  allowedServices = [],
 }: ServiceRequestFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
-  const [prescriptionPreview, setPrescriptionPreview] = useState<string | null>(
-    null,
-  );
   const [locationLoading, setLocationLoading] = useState(false);
   const [selectedHospital, setSelectedHospital] = useState<string>("");
   const [manualDestination, setManualDestination] = useState(false);
 
   const typeFromUrl = searchParams.get("type");
-  const defaultType = initialType || typeFromUrl || "medical_consultation";
+  
+  // Determine if the user has access to any services
+  const hasAccess = allowedServices.length > 0;
+  
+  const requestedType = initialType || typeFromUrl;
+  const isRequestedTypeAllowed = requestedType && allowedServices.includes(requestedType);
+  const isExplicitlyBlocked = requestedType && !isRequestedTypeAllowed && hasAccess;
+  const fallbackType = hasAccess ? allowedServices[0] : "medical_consultation";
+  const defaultType = isRequestedTypeAllowed ? requestedType : fallbackType;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -431,7 +409,6 @@ export function ServiceRequestForm({
       type: defaultType,
       memberId: "Myself",
       agreedToTerms: false,
-      deliveryType: "home",
       collectionType: "home",
       ambulanceType: "bls",
       urgency: "scheduled",
@@ -455,16 +432,6 @@ export function ServiceRequestForm({
     if (userProfile?.pincode)
       form.setValue("pickupPincode", userProfile.pincode);
   }, [userProfile, form]);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      form.setValue("prescriptionFile", file);
-      const reader = new FileReader();
-      reader.onloadend = () => setPrescriptionPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  };
 
   const getCurrentLocation = () => {
     setLocationLoading(true);
@@ -549,7 +516,6 @@ export function ServiceRequestForm({
       ambulance: "🚑 Book Ambulance Service",
       medical_consultation: "👨‍⚕️ Doctor Appointment",
       diagnostic: "🔬 Book Diagnostic Test",
-      medicine: "💊 Order Medicines",
       caretaker: "🤝 Caretaker Services",
       nursing: "🏥 Nursing Procedures",
     };
@@ -569,25 +535,73 @@ export function ServiceRequestForm({
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <h1 className="text-xl font-bold mb-6">{getTitle()}</h1>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Member Selection */}
-          <div className="space-y-2">
-            <Label>Select Member</Label>
-            <Select
-              onValueChange={(val) => form.setValue("memberId", val)}
-              defaultValue="Myself"
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Member" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Myself">Myself (Self)</SelectItem>
-                <SelectItem value="Spouse">Spouse</SelectItem>
-                <SelectItem value="Child">Child</SelectItem>
-                <SelectItem value="Parent">Parent</SelectItem>
-              </SelectContent>
-            </Select>
+        {!hasAccess ? (
+          <div className="text-center py-8">
+            <AlertCircle className="mx-auto h-12 w-12 text-slate-400 mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-2">No Active Subscriptions</h3>
+            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+              You do not have access to any services. Please purchase a subscription plan to request services.
+            </p>
+            <Button onClick={() => router.push("/shop/plans")} className="bg-teal-600 hover:bg-teal-700">
+              View Plans
+            </Button>
           </div>
+        ) : isExplicitlyBlocked ? (
+          <div className="text-center py-8">
+            <AlertCircle className="mx-auto h-12 w-12 text-amber-500 mb-4" />
+            <h3 className="text-lg font-medium text-slate-900 mb-2">Service Not Covered</h3>
+            <p className="text-slate-500 mb-6 max-w-md mx-auto">
+              Your current plan does not cover this service. Please explore other plans to get access to this service.
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button onClick={() => router.push("/shop/plans")} className="bg-teal-600 hover:bg-teal-700">
+                Explore Plans
+              </Button>
+              <Button variant="outline" onClick={() => router.push("/service-requests/new")}>
+                View Available Services
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Service Selection */}
+            <div className="space-y-2">
+              <Label>Select Service</Label>
+              <Select
+                onValueChange={(val) => form.setValue("type", val)}
+                defaultValue={defaultType}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allowedServices.includes("ambulance") && <SelectItem value="ambulance">🚑 Ambulance Service</SelectItem>}
+                  {allowedServices.includes("medical_consultation") && <SelectItem value="medical_consultation">👨‍⚕️ Doctor Appointment</SelectItem>}
+                  {allowedServices.includes("diagnostic") && <SelectItem value="diagnostic">🔬 Diagnostic Test</SelectItem>}
+                  {allowedServices.includes("caretaker") && <SelectItem value="caretaker">🤝 Caretaker Services</SelectItem>}
+                  {allowedServices.includes("nursing") && <SelectItem value="nursing">🏥 Nursing Procedures</SelectItem>}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Member Selection */}
+            <div className="space-y-2">
+              <Label>Select Member</Label>
+              <Select
+                onValueChange={(val) => form.setValue("memberId", val)}
+                defaultValue="Myself"
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Member" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Myself">Myself (Self)</SelectItem>
+                  <SelectItem value="Spouse">Spouse</SelectItem>
+                  <SelectItem value="Child">Child</SelectItem>
+                  <SelectItem value="Parent">Parent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
           {/* ===== AMBULANCE SERVICE ===== */}
           {watchType === "ambulance" && (
@@ -1002,73 +1016,6 @@ export function ServiceRequestForm({
             </div>
           )}
 
-          {/* ===== MEDICINE DELIVERY ===== */}
-          {watchType === "medicine" && (
-            <div className="space-y-6">
-              <div className="space-y-3">
-                <Label>Delivery Type</Label>
-                <RadioGroup
-                  onValueChange={(val) => form.setValue("deliveryType", val)}
-                  defaultValue="home"
-                >
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="home" id="home" />
-                    <Label htmlFor="home">Home Delivery</Label>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <RadioGroupItem value="pickup" id="pickup" />
-                    <Label htmlFor="pickup">Self Pickup from Pharmacy</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-
-              <div className="space-y-3">
-                <Label>Upload Prescription *</Label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center">
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="prescription"
-                  />
-                  <Label
-                    htmlFor="prescription"
-                    className="cursor-pointer block"
-                  >
-                    <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-                    <span className="text-teal-600">Click to upload</span>
-                    <span className="text-slate-500 text-sm block">
-                      or drag and drop (JPG, PDF up to 5MB)
-                    </span>
-                  </Label>
-                </div>
-                {prescriptionPreview && (
-                  <p className="text-sm text-green-600">
-                    ✓ Prescription uploaded
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-3">
-                <Label>Medicines List (Optional)</Label>
-                <Textarea
-                  {...form.register("medicinesList")}
-                  placeholder="List medicines if you don't have prescription"
-                  rows={3}
-                />
-              </div>
-
-              <div className="space-y-3">
-                <Label>Delivery Address</Label>
-                <Textarea
-                  {...form.register("deliveryAddress")}
-                  placeholder="Complete delivery address"
-                  rows={2}
-                />
-              </div>
-            </div>
-          )}
 
           {/* ===== CARETAKER SERVICES ===== */}
           {watchType === "caretaker" && (
@@ -1166,27 +1113,6 @@ export function ServiceRequestForm({
               </div>
 
               <div className="space-y-3">
-                <Label>Doctor's Prescription *</Label>
-                <div className="border-2 border-dashed border-slate-200 rounded-lg p-4 text-center">
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                    id="nursingPrescription"
-                  />
-                  <Label
-                    htmlFor="nursingPrescription"
-                    className="cursor-pointer block"
-                  >
-                    <Upload className="h-8 w-8 mx-auto text-slate-400 mb-2" />
-                    <span className="text-teal-600">
-                      Upload Doctor's Prescription
-                    </span>
-                  </Label>
-                </div>
-              </div>
-
-              <div className="space-y-3">
                 <Label>Additional Notes</Label>
                 <Textarea
                   {...form.register("requirements")}
@@ -1235,6 +1161,7 @@ export function ServiceRequestForm({
               : "Submit Request"}
           </Button>
         </form>
+        )}
       </div>
 
       {/* Terms Modal */}

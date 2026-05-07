@@ -15,14 +15,6 @@ interface MyPurchasesViewProps {
     purchases: any[];
 }
 
-// Empty member template structure for first-time plan activation
-const EMPTY_MEMBER_TEMPLATE = [
-    { id: 'm1', name: '', relation: 'Self', dob: '', gender: '', age: 0, bloodGroup: '', mobile: '', isLocked: false, isMandatory: true },
-    { id: 'm2', name: '', relation: 'Spouse', dob: '', gender: '', age: 0, bloodGroup: '', mobile: '', isLocked: false, isMandatory: true },
-    { id: 'm3', name: '', relation: 'Child 1', dob: '', gender: '', age: 0, bloodGroup: '', mobile: '', isLocked: false, isMandatory: true },
-    { id: 'm4', name: '', relation: 'Child 2', dob: '', gender: '', age: 0, bloodGroup: '', mobile: '', isLocked: false, isMandatory: true },
-];
-
 
 
 interface MemberFormData {
@@ -64,8 +56,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isMemberFormOpen, setIsMemberFormOpen] = useState(false);
     const [isMemberWizardOpen, setIsMemberWizardOpen] = useState(false);
-    const [members, setMembers] = useState(EMPTY_MEMBER_TEMPLATE);
-    const [editingMember, setEditingMember] = useState<any>(null);
+    const [isSavingMember, setIsSavingMember] = useState(false);
     const [memberForm, setMemberForm] = useState<MemberFormData>({
         name: '',
         dob: '',
@@ -75,10 +66,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
         mobile: ''
     });
 
-    // Check if all 4 mandatory members are filled
-    const filledMembersCount = members.filter(m => m.name && m.dob && m.gender && m.bloodGroup && m.mobile).length;
-    const allMandatoryFilled = filledMembersCount >= 4;
-    const progressPercent = (filledMembersCount / 4) * 100;
+
 
     // Get active and expired plans separately
     const activePlans = allPurchases.filter(p => p.status === 'active');
@@ -94,55 +82,49 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
         setIsMemberWizardOpen(true);
     };
 
-    const handleEditMember = (member: any) => {
-        if (member.isLocked) {
-            toast.error("Member details are locked and cannot be edited after submission.");
-            return;
-        }
-        setEditingMember(member);
+    const handleAddMemberClick = () => {
         setMemberForm({
-            name: member.name,
-            dob: member.dob,
-            gender: member.gender,
-            relation: member.relation,
-            bloodGroup: member.bloodGroup || '',
-            mobile: member.mobile || ''
+            name: '',
+            dob: '',
+            gender: '',
+            relation: '',
+            bloodGroup: '',
+            mobile: ''
         });
         setIsMemberFormOpen(true);
     };
 
-    const handleSaveMember = () => {
-        if (!memberForm.name || !memberForm.dob || !memberForm.gender || !memberForm.bloodGroup || !memberForm.mobile) {
+    const handleSaveMember = async () => {
+        if (!memberForm.name || !memberForm.dob || !memberForm.gender || !memberForm.relation) {
             toast.error("Please fill all required fields");
             return;
         }
 
-        // Validate mobile
-        if (!/^[6-9]\d{9}$/.test(memberForm.mobile)) {
-            toast.error("Invalid mobile number (10 digits, starting with 6-9)");
-            return;
+        setIsSavingMember(true);
+        try {
+            const { addUserFamilyMember } = await import('@/app/actions/ecards');
+            const result = await addUserFamilyMember(selectedPurchase.plan_id, {
+                fullName: memberForm.name,
+                dob: memberForm.dob,
+                gender: memberForm.gender,
+                relation: memberForm.relation,
+                bloodGroup: memberForm.bloodGroup || undefined,
+                contactNumber: memberForm.mobile || undefined
+            });
+
+            if (result.success) {
+                toast.success("Member added successfully!");
+                setIsMemberFormOpen(false);
+                // Trigger page refresh to show new member
+                window.location.reload();
+            } else {
+                toast.error(result.error || "Failed to add member");
+            }
+        } catch (error) {
+            toast.error("An error occurred while saving the member.");
+        } finally {
+            setIsSavingMember(false);
         }
-
-        const age = calculateAge(memberForm.dob);
-
-        // Update member and lock it
-        setMembers(prev => prev.map(m =>
-            m.id === editingMember.id
-                ? { ...m, ...memberForm, age, isLocked: true }
-                : m
-        ));
-
-        toast.success("Member details saved!", {
-            description: `${memberForm.name} (${memberForm.relation}) has been added.`
-        });
-        setIsMemberFormOpen(false);
-        setEditingMember(null);
-    };
-
-    const handleSaveProgress = () => {
-        toast.success("Progress saved!", {
-            description: `${filledMembersCount}/4 members completed. You can continue later.`
-        });
     };
 
     return (
@@ -157,100 +139,11 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                 </Badge>
             </div>
 
-            {/* Mandatory 4 Members Warning - Show only if first purchase is incomplete */}
-            {!allMandatoryFilled && allPurchases.some(p => p.isFirstPurchase && p.status === 'active') && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
-                    <div className="flex items-start gap-3">
-                        <AlertCircle className="h-6 w-6 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                            <h4 className="font-bold text-amber-800 text-lg">Add Family Members (4 Members Mandatory)</h4>
-                            <p className="text-sm text-amber-700 mt-1">
-                                Complete all 4 member details to activate your plan benefits.
-                            </p>
-
-                            {/* Progress Bar */}
-                            <div className="mt-4">
-                                <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-amber-800">
-                                        Progress: {filledMembersCount} of 4 Members Added
-                                    </span>
-                                    <span className="text-sm font-bold text-amber-600">{Math.round(progressPercent)}%</span>
-                                </div>
-                                <div className="w-full bg-amber-200 rounded-full h-3 overflow-hidden">
-                                    <div
-                                        className="bg-gradient-to-r from-amber-500 to-orange-500 h-3 rounded-full transition-all duration-500"
-                                        style={{ width: `${progressPercent}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-
-                            {/* Member Cards Preview */}
-                            <div className="mt-4 space-y-2">
-                                {members.map((member, idx) => (
-                                    <div
-                                        key={member.id}
-                                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border transition-all gap-3 ${member.isLocked
-                                            ? 'bg-emerald-50 border-emerald-200'
-                                            : 'bg-white border-amber-200 hover:border-amber-400 cursor-pointer'
-                                            }`}
-                                        onClick={() => !member.isLocked && handleEditMember(member)}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${member.isLocked ? 'bg-emerald-500 text-white' : 'bg-amber-100 text-amber-600'
-                                                }`}>
-                                                {idx + 1}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-800">
-                                                    Member {idx + 1} ({member.relation})
-                                                </p>
-                                                {member.isLocked ? (
-                                                    <p className="text-sm text-slate-600">
-                                                        {member.name} | Age {member.age} | {member.gender}
-                                                    </p>
-                                                ) : (
-                                                    <p className="text-sm text-amber-600">Click to add {member.relation.toLowerCase()} details</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {member.isLocked ? (
-                                            <span className="text-emerald-600 text-sm font-semibold flex items-center gap-1">
-                                                <CheckCircle size={16} /> Done
-                                            </span>
-                                        ) : (
-                                            <Button size="sm" variant="outline" className="text-amber-600 border-amber-300 hover:bg-amber-50">
-                                                <Plus size={14} className="mr-1" /> Add
-                                            </Button>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="mt-4 p-3 bg-amber-100 rounded-lg">
-                                <p className="text-sm text-amber-800 flex items-center gap-2">
-                                    <AlertCircle size={14} />
-                                    <strong>⚠️ You must add all 4 members to complete plan activation</strong>
-                                </p>
-                            </div>
-
-                            <div className="mt-4 flex flex-col sm:flex-row gap-3">
-                                <Button variant="outline" onClick={handleSaveProgress} className="border-amber-300 text-amber-700 hover:bg-amber-100 w-full sm:w-auto">
-                                    Save Progress
-                                </Button>
-                                <Button
-                                    className="bg-amber-600 hover:bg-amber-700 text-white w-full sm:w-auto"
-                                    onClick={() => {
-                                        const nextMember = members.find(m => !m.isLocked);
-                                        if (nextMember) handleEditMember(nextMember);
-                                    }}
-                                >
-                                    Continue Adding Members <ChevronRight size={14} className="ml-1" />
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+                <Link href="/shop/plans" className="shrink-0">
+                    <Button variant="outline" className="text-teal-600 border-teal-200 hover:bg-teal-50">
+                        <ShoppingBag size={16} className="mr-2" /> Browse More Plans
+                    </Button>
+                </Link>
 
             {/* Active Plans Section */}
             {activePlans.length > 0 && (
@@ -520,57 +413,66 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                         <DialogTitle>Manage Members - {selectedPurchase?.plan_name}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-500">{filledMembersCount}/4 members added</span>
-                            <div className="w-32 bg-slate-200 rounded-full h-2">
-                                <div
-                                    className="bg-teal-500 h-2 rounded-full transition-all"
-                                    style={{ width: `${progressPercent}%` }}
-                                ></div>
+                            <div className="flex justify-between items-center mb-4">
+                                <span className="text-sm font-medium text-slate-700">
+                                    {selectedPurchase?.family_members?.length || 1} / {selectedPurchase?.max_members || 4} Members Added
+                                </span>
                             </div>
-                        </div>
 
-                        <div className="space-y-2">
-                            {members.map((member, idx) => (
-                                <div
-                                    key={member.id}
-                                    className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-3 ${member.isLocked
-                                        ? 'bg-emerald-50 border-emerald-200'
-                                        : 'bg-white border-slate-200 hover:border-teal-300 cursor-pointer'
-                                        }`}
-                                    onClick={() => !member.isLocked && handleEditMember(member)}
-                                >
+                            <div className="space-y-3">
+                                {/* Always show Self member first */}
+                                <div className="flex items-center justify-between p-3 rounded-lg border bg-emerald-50 border-emerald-200">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 ${member.isLocked ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-500'
-                                            }`}>
-                                            {member.isLocked ? <CheckCircle size={16} /> : idx + 1}
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 bg-emerald-500 text-white">
+                                            <CheckCircle size={16} />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-slate-800">{member.relation}</p>
-                                            <p className="text-sm text-slate-500">
-                                                {member.isLocked ? `${member.name} | ${member.gender} | ${member.bloodGroup}` : 'Not added yet'}
-                                            </p>
+                                            <p className="font-medium text-slate-800">Primary Member (Self)</p>
+                                            <p className="text-sm text-slate-500">{selectedPurchase?.member_name}</p>
                                         </div>
                                     </div>
-                                    {member.isLocked ? (
-                                        <Lock size={14} className="text-slate-400 self-end sm:self-auto" />
-                                    ) : (
-                                        <ChevronRight size={14} className="text-slate-400 self-end sm:self-auto" />
-                                    )}
+                                    <Lock size={14} className="text-slate-400" />
                                 </div>
-                            ))}
-                        </div>
 
-                        <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                            <Button variant="outline" onClick={() => setIsMemberWizardOpen(false)} className="flex-1 w-full sm:w-auto">
-                                Close
-                            </Button>
-                            <Link href="/e-cards" className="flex-1 w-full sm:w-auto">
-                                <Button className="w-full bg-teal-600 hover:bg-teal-700" disabled={!allMandatoryFilled}>
-                                    <Smartphone size={14} className="mr-2" /> Generate E-Cards
+                                {/* List added family members */}
+                                {selectedPurchase?.family_members?.map((member: any, idx: number) => (
+                                    <div key={member.id || idx} className="flex items-center justify-between p-3 rounded-lg border bg-emerald-50 border-emerald-200">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 bg-emerald-500 text-white">
+                                                <CheckCircle size={16} />
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-slate-800">{member.relation}</p>
+                                                <p className="text-sm text-slate-500">{member.name}</p>
+                                            </div>
+                                        </div>
+                                        <Lock size={14} className="text-slate-400" />
+                                    </div>
+                                ))}
+
+                                {/* Add New Member Button if limit not reached */}
+                                {((selectedPurchase?.family_members?.length || 0) + 1) < (selectedPurchase?.max_members || 4) && (
+                                    <div
+                                        className="flex items-center justify-center p-4 rounded-lg border border-dashed border-teal-300 bg-teal-50 hover:bg-teal-100 cursor-pointer transition-colors"
+                                        onClick={handleAddMemberClick}
+                                    >
+                                        <div className="flex items-center gap-2 text-teal-700 font-semibold">
+                                            <Plus size={18} /> Add New Member
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                                <Button variant="outline" onClick={() => setIsMemberWizardOpen(false)} className="flex-1 w-full sm:w-auto">
+                                    Close
                                 </Button>
-                            </Link>
-                        </div>
+                                <Link href="/e-cards" className="flex-1 w-full sm:w-auto">
+                                    <Button className="w-full bg-teal-600 hover:bg-teal-700">
+                                        <Smartphone size={14} className="mr-2" /> Generate E-Cards
+                                    </Button>
+                                </Link>
+                            </div>
                     </div>
                 </DialogContent>
             </Dialog>
@@ -579,7 +481,7 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
             <Dialog open={isMemberFormOpen} onOpenChange={setIsMemberFormOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add {editingMember?.relation} Details</DialogTitle>
+                        <DialogTitle>Add New Member</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
@@ -597,6 +499,22 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
+                                <Label>Relation <span className="text-red-500">*</span></Label>
+                                <Select value={memberForm.relation} onValueChange={(val) => setMemberForm(prev => ({ ...prev, relation: val }))}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select relation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Spouse">Spouse</SelectItem>
+                                        <SelectItem value="Parent">Parent</SelectItem>
+                                        <SelectItem value="Child">Child</SelectItem>
+                                        <SelectItem value="Sibling">Sibling</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label>Date of Birth <span className="text-red-500">*</span></Label>
                                 <Input
                                     type="date"
@@ -604,7 +522,9 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                                     onChange={(e) => setMemberForm(prev => ({ ...prev, dob: e.target.value }))}
                                 />
                             </div>
+                        </div>
 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Gender <span className="text-red-500">*</span></Label>
                                 <Select value={memberForm.gender} onValueChange={(val) => setMemberForm(prev => ({ ...prev, gender: val }))}>
@@ -651,8 +571,8 @@ export function MyPurchasesView({ purchases }: MyPurchasesViewProps) {
                             <Button variant="outline" onClick={() => setIsMemberFormOpen(false)} className="flex-1 w-full sm:w-auto">
                                 Cancel
                             </Button>
-                            <Button onClick={handleSaveMember} className="flex-1 w-full sm:w-auto bg-teal-600 hover:bg-teal-700">
-                                <CheckCircle size={14} className="mr-2 shrink-0" /> Save & Lock
+                            <Button onClick={handleSaveMember} disabled={isSavingMember} className="flex-1 w-full sm:w-auto bg-teal-600 hover:bg-teal-700">
+                                <CheckCircle size={14} className="mr-2 shrink-0" /> {isSavingMember ? 'Saving...' : 'Save & Lock'}
                             </Button>
                         </div>
                     </div>

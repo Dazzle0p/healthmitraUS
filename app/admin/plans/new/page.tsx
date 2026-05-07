@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     ArrowLeft, ArrowRight, Save, CheckCircle, Plus, Trash2,
     ChevronUp, ChevronDown, Upload, FileText, ImageIcon, HelpCircle
@@ -19,7 +20,7 @@ import { getCategories, createPlan } from '@/app/actions/plans';
 import Link from 'next/link';
 import { useDropzone } from 'react-dropzone';
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 5;
 
 const INITIAL_PLAN: Partial<Plan> = {
     name: '',
@@ -41,7 +42,16 @@ const INITIAL_PLAN: Partial<Plan> = {
     isFeatured: false,
     planImage: '',
     brochurePdf: '',
+    allowed_services: [],
 };
+
+const SYSTEM_SERVICES = [
+    { id: 'ambulance', label: 'Ambulance' },
+    { id: 'medical_consultation', label: 'Doctor Consultation' },
+    { id: 'diagnostic', label: 'Lab Tests / Diagnostic' },
+    { id: 'caretaker', label: 'Caretaker' },
+    { id: 'nursing', label: 'Nursing' },
+];
 
 function ImageDropzone({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
     const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -222,10 +232,9 @@ export default function CreatePlanWizard() {
     const stepLabels = [
         '1. Basic Details',
         '2. Media',
-        '3. Services',
-        '4. Validity & Members',
-        '5. Plan Details (Q&A)',
-        '6. Review & Publish',
+        '3. Validity & Members',
+        '4. Plan Details (Q&A)',
+        '5. Review & Publish',
     ];
 
     return (
@@ -302,6 +311,57 @@ export default function CreatePlanWizard() {
                                 </div>
                             </div>
 
+                            <div className="space-y-3 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                                <div>
+                                    <Label className="text-base text-slate-800">Plan Categories</Label>
+                                    <p className="text-sm text-slate-500 mb-3">Select the categories this plan belongs to.</p>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    {categories.map(c => (
+                                        <div key={c.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`cat_${c.id}`}
+                                                checked={(plan.categoryIds || []).includes(c.id)}
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        updatePlan({ categoryIds: [...(plan.categoryIds || []), c.id] });
+                                                    } else {
+                                                        updatePlan({ categoryIds: (plan.categoryIds || []).filter(id => id !== c.id) });
+                                                    }
+                                                }}
+                                            />
+                                            <Label htmlFor={`cat_${c.id}`} className="cursor-pointer">{c.name}</Label>
+                                        </div>
+                                    ))}
+                                    {categories.length === 0 && <span className="text-sm text-slate-500">No categories found. Create them in Categories.</span>}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3 p-4 bg-teal-50 border border-teal-200 rounded-xl">
+                                <div>
+                                    <Label className="text-base text-teal-800 font-bold">System Access Controls (Allowed Services)</Label>
+                                    <p className="text-sm text-teal-600 mb-3">Which backend services does this plan grant access to?</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {SYSTEM_SERVICES.map(s => (
+                                        <div key={s.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`svc_${s.id}`}
+                                                checked={(plan.allowed_services || []).includes(s.id)}
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        updatePlan({ allowed_services: [...(plan.allowed_services || []), s.id] });
+                                                    } else {
+                                                        updatePlan({ allowed_services: (plan.allowed_services || []).filter(id => id !== s.id) });
+                                                    }
+                                                }}
+                                            />
+                                            <Label htmlFor={`svc_${s.id}`} className="cursor-pointer font-medium">{s.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
                                 <Label>Description</Label>
                                 <Textarea value={plan.description} onChange={e => updatePlan({ description: e.target.value })} placeholder="Detailed plan description..." className="bg-white border-slate-200 text-slate-900 h-32" />
@@ -354,82 +414,8 @@ export default function CreatePlanWizard() {
                         </div>
                     )}
 
-                    {/* STEP 3: SERVICES */}
+                    {/* STEP 3: VALIDITY & MEMBERS */}
                     {currentStep === 3 && (
-                        <div className="space-y-6 slide-in-from-right-4 duration-500 animate-in fade-in">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-medium text-slate-800">Included Services</h3>
-                                <Button onClick={handleServiceAdd} variant="outline" size="sm" className="border-teal-600 text-teal-600 hover:bg-teal-50">
-                                    <Plus className="mr-2 h-4 w-4" /> Add Service
-                                </Button>
-                            </div>
-
-                            <div className="space-y-4">
-                                {plan.services?.length === 0 && (
-                                    <div className="text-center p-12 bg-slate-50 rounded-xl border border-dashed border-slate-300 text-slate-500">
-                                        No services added yet. Click &quot;Add Service&quot; to begin.
-                                    </div>
-                                )}
-                                {plan.services?.map((service, index) => (
-                                    <div key={service.id} className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-4 relative group hover:bg-white hover:shadow-sm transition-all">
-                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button size="icon" variant="ghost" className="h-6 w-6 text-slate-500"><ChevronUp className="h-4 w-4" /></Button>
-                                            <Button size="icon" variant="ghost" className="h-6 w-6 text-slate-500"><ChevronDown className="h-4 w-4" /></Button>
-                                            <Button size="icon" variant="ghost" className="h-6 w-6 text-red-500 hover:bg-red-50" onClick={() => removeService(service.id)}><Trash2 className="h-4 w-4" /></Button>
-                                        </div>
-
-                                        <div className="grid grid-cols-12 gap-4">
-                                            <div className="col-span-1 flex items-center justify-center">
-                                                <div className="h-8 w-8 bg-slate-200 rounded-full flex items-center justify-center text-slate-600 text-sm font-bold border border-slate-300">
-                                                    {index + 1}
-                                                </div>
-                                            </div>
-                                            <div className="col-span-11 grid grid-cols-2 gap-4">
-                                                <div className="space-y-1">
-                                                    <Label className="text-xs text-slate-500">Service Name</Label>
-                                                    <Input value={service.name} onChange={e => updateService(service.id, { name: e.target.value })} placeholder="Service Name" className="bg-white border-slate-200 text-slate-900 h-8" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <Label className="text-xs text-slate-500">Category</Label>
-                                                    <Select value={service.categoryId} onValueChange={v => updateService(service.id, { categoryId: v })}>
-                                                        <SelectTrigger className="bg-white border-slate-200 text-slate-900 h-8">
-                                                            <SelectValue placeholder="Select" />
-                                                        </SelectTrigger>
-                                                        <SelectContent className="bg-white text-slate-900 border-slate-200">
-                                                            {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                                <div className="col-span-2 space-y-1">
-                                                    <Label className="text-xs text-slate-500">Description</Label>
-                                                    <Input value={service.description} onChange={e => updateService(service.id, { description: e.target.value })} placeholder="Details..." className="bg-white border-slate-200 text-slate-900 h-8" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <Label className="text-xs text-slate-500">Limit Description</Label>
-                                                    <Input value={service.limit_description} onChange={e => updateService(service.id, { limit_description: e.target.value })} placeholder="e.g. 2 per year" className="bg-white border-slate-200 text-slate-900 h-8" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <Label className="text-xs text-slate-500">Status</Label>
-                                                    <Select value={service.status} onValueChange={v => updateService(service.id, { status: v as 'enabled' | 'disabled' })}>
-                                                        <SelectTrigger className="bg-white border-slate-200 text-slate-900 h-8">
-                                                            <SelectValue />
-                                                        </SelectTrigger>
-                                                        <SelectContent className="bg-white text-slate-900 border-slate-200">
-                                                            <SelectItem value="enabled">Enabled</SelectItem>
-                                                            <SelectItem value="disabled">Disabled</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* STEP 4: VALIDITY & MEMBERS */}
-                    {currentStep === 4 && (
                         <div className="space-y-6 slide-in-from-right-4 duration-500 animate-in fade-in max-w-2xl mx-auto">
                             <div className="space-y-4 p-6 bg-slate-50 border border-slate-200 rounded-xl">
                                 <h3 className="text-lg font-medium text-slate-800">Plan Duration</h3>
@@ -511,8 +497,8 @@ export default function CreatePlanWizard() {
                         </div>
                     )}
 
-                    {/* STEP 5: PLAN DETAILS (Q&A) */}
-                    {currentStep === 5 && (
+                    {/* STEP 4: PLAN DETAILS (Q&A) */}
+                    {currentStep === 4 && (
                         <div className="space-y-6 slide-in-from-right-4 duration-500 animate-in fade-in">
                             <div className="flex justify-between items-center">
                                 <div>
@@ -582,8 +568,8 @@ export default function CreatePlanWizard() {
                         </div>
                     )}
 
-                    {/* STEP 6: REVIEW */}
-                    {currentStep === 6 && (
+                    {/* STEP 5: REVIEW */}
+                    {currentStep === 5 && (
                         <div className="space-y-8 slide-in-from-right-4 duration-500 animate-in fade-in">
                             {/* Hero Review */}
                             <div className="bg-gradient-to-br from-white to-slate-50 border border-teal-100 rounded-2xl p-8 text-center space-y-4 shadow-sm">
@@ -600,8 +586,8 @@ export default function CreatePlanWizard() {
                                     </div>
                                     <div className="w-px bg-slate-200 h-12"></div>
                                     <div className="text-center">
-                                        <div className="text-3xl font-bold text-slate-800">{plan.services?.length}</div>
-                                        <div className="text-xs text-slate-500 uppercase tracking-wider">Services</div>
+                                        <div className="text-3xl font-bold text-slate-800">{plan.allowed_services?.length || 0}</div>
+                                        <div className="text-xs text-slate-500 uppercase tracking-wider">Access Controls</div>
                                     </div>
                                     <div className="w-px bg-slate-200 h-12"></div>
                                     <div className="text-center">
