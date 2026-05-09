@@ -22,6 +22,8 @@ import {
   FileText,
   Award,
   ArrowUpRight,
+  HeartHandshake,
+  Siren,
 } from "lucide-react";
 import Image from "next/image";
 import { Testimonials } from "@/components/testimonials";
@@ -180,6 +182,16 @@ export default async function Home() {
       icon: Heart,
       title: "Personalized Care",
       desc: "Tailored care plans for every member",
+    },
+    {
+      icon: HeartHandshake,
+      title: "Eldercare Services",
+      desc: "Dedicated care and support for the elderly",
+    },
+    {
+      icon: Siren,
+      title: "SOS Emergency",
+      desc: "Instant access to critical emergency assistance",
     },
   ];
 

@@ -231,11 +231,18 @@ export default function ContactPage() {
                 {/* Map Section */}
                 <section className="py-16 px-4 md:px-6 bg-card">
                     <div className="max-w-6xl mx-auto">
-                        <div className="rounded-2xl overflow-hidden border border-border h-80 bg-muted flex items-center justify-center">
-                            <div className="text-center">
-                                <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                                <p className="text-muted-foreground">Interactive map would be displayed here</p>
-                            </div>
+                        <div className="rounded-2xl overflow-hidden border border-border h-96 bg-muted relative">
+                            <iframe 
+                                src="https://maps.google.com/maps?q=1550%20Sheridan%20Drive,%20Buffalo,%20NY%2014217,%20United%20States&t=&z=13&ie=UTF8&iwloc=&output=embed" 
+                                width="100%" 
+                                height="100%" 
+                                style={{ border: 0 }} 
+                                allowFullScreen 
+                                loading="lazy" 
+                                referrerPolicy="no-referrer-when-downgrade"
+                                className="absolute inset-0"
+                                title="HealthMitra USA Office Location"
+                            ></iframe>
                         </div>
                     </div>
                 </section>

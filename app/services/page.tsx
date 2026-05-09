@@ -9,6 +9,8 @@ import {
   Shield,
   Clock,
   CreditCard,
+  HeartHandshake,
+  Siren,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -78,6 +80,30 @@ const services = [
       "Real-time Tracking",
       "Document Upload",
       "Expert Support",
+    ],
+  },
+  {
+    icon: HeartHandshake,
+    title: "Eldercare Services",
+    description:
+      "Dedicated care and assistance programs designed for the well-being and comfort of the elderly.",
+    features: [
+      "Home Attendants",
+      "Routine Checkups",
+      "Medication Assistance",
+      "Companionship",
+    ],
+  },
+  {
+    icon: Siren,
+    title: "SOS Emergency",
+    description:
+      "Instant emergency response system for critical medical situations and immediate assistance.",
+    features: [
+      "24/7 Response",
+      "Immediate Dispatch",
+      "Priority Admission",
+      "Family Alerts",
     ],
   },
 ];
