@@ -38,7 +38,7 @@ export interface Partner {
     altPhone?: string;
     referralCode: string;
     commissionPercent: number;
-    status: 'active' | 'inactive' | 'suspended';
+    status: 'active' | 'inactive' | 'suspended' | 'pending' | 'rejected';
     kycStatus: 'pending' | 'submitted' | 'verified' | 'rejected';
 
     // Location

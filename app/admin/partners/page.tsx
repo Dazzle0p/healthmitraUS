@@ -8,16 +8,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
-    Search, Loader2, Handshake, Plus, Users, DollarSign, Shield, TrendingUp, Eye, MapPin, Phone
+    Search, Loader2, Handshake, Plus, Users, DollarSign, Shield, TrendingUp, Eye, MapPin, Phone, Check, X
 } from 'lucide-react';
 import { Partner } from '@/types/partners';
-import { getPartners, getPartnerStats } from '@/app/actions/partners';
+import { getPartners, getPartnerStats, updatePartnerStatus } from '@/app/actions/partners';
 import Link from 'next/link';
 
 const STATUS_COLORS: Record<string, string> = {
     active: 'bg-emerald-100 text-emerald-700 border-emerald-200',
     inactive: 'bg-slate-100 text-slate-500 border-slate-200',
     suspended: 'bg-red-100 text-red-600 border-red-200',
+    pending: 'bg-amber-100 text-amber-700 border-amber-200',
+    rejected: 'bg-slate-100 text-slate-700 border-slate-300',
 };
 
 const KYC_COLORS: Record<string, string> = {
@@ -34,32 +36,40 @@ export default function PartnersListingPage() {
     const [statusFilter, setStatusFilter] = useState('all');
     const [loading, setLoading] = useState(true);
 
+    const load = async () => {
+        setLoading(true);
+        const [partnersRes, statsRes] = await Promise.all([
+            getPartners({ query: search, status: statusFilter }),
+            getPartnerStats()
+        ]);
+        if (partnersRes.success && partnersRes.data) {
+            setPartners(partnersRes.data);
+            if (partnersRes.stats) {
+                setStats({
+                    total: partnersRes.stats.total,
+                    active: partnersRes.stats.active,
+                    totalCommission: partnersRes.stats.totalRevenue,
+                    totalRevenue: partnersRes.stats.totalRevenue
+                });
+            }
+        }
+        if (statsRes.success && statsRes.data) {
+            setStats(prev => ({ ...prev, ...statsRes.data }));
+        }
+        setLoading(false);
+    };
+
     useEffect(() => {
-        const load = async () => {
-            setLoading(true);
-            const [partnersRes, statsRes] = await Promise.all([
-                getPartners({ query: search, status: statusFilter }),
-                getPartnerStats()
-            ]);
-            if (partnersRes.success && partnersRes.data) {
-                setPartners(partnersRes.data);
-                if (partnersRes.stats) {
-                    setStats({
-                        total: partnersRes.stats.total,
-                        active: partnersRes.stats.active,
-                        totalCommission: partnersRes.stats.totalRevenue,
-                        totalRevenue: partnersRes.stats.totalRevenue
-                    });
-                }
-            }
-            if (statsRes.success && statsRes.data) {
-                setStats(prev => ({ ...prev, ...statsRes.data }));
-            }
-            setLoading(false);
-        };
         const t = setTimeout(load, 300);
         return () => clearTimeout(t);
     }, [search, statusFilter]);
+
+    const handleStatusUpdate = async (id: string, newStatus: 'active' | 'rejected') => {
+        const res = await updatePartnerStatus(id, newStatus);
+        if (res.success) {
+            load(); // Reload data
+        }
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in py-6">
@@ -142,8 +152,10 @@ export default function PartnersListingPage() {
                     <SelectContent className="bg-white border-slate-200 text-slate-700">
                         <SelectItem value="all">All Status</SelectItem>
                         <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
                         <SelectItem value="inactive">Inactive</SelectItem>
                         <SelectItem value="suspended">Suspended</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -194,9 +206,21 @@ export default function PartnersListingPage() {
                                     <TableCell><Badge className={`text-xs border ${STATUS_COLORS[p.status]}`}>{p.status}</Badge></TableCell>
                                     <TableCell><Badge className={`text-xs border ${KYC_COLORS[p.kycStatus]}`}>{p.kycStatus}</Badge></TableCell>
                                     <TableCell className="text-center">
-                                        <Link href={`/admin/partners/${p.id}`}>
-                                            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-teal-600"><Eye className="h-4 w-4" /></Button>
-                                        </Link>
+                                        <div className="flex items-center justify-center gap-1">
+                                            {p.status === 'pending' && (
+                                                <>
+                                                    <Button variant="ghost" size="icon" className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50" onClick={() => handleStatusUpdate(p.id, 'active')} title="Accept">
+                                                        <Check className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleStatusUpdate(p.id, 'rejected')} title="Reject">
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            )}
+                                            <Link href={`/admin/partners/${p.id}`}>
+                                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-teal-600" title="View Details"><Eye className="h-4 w-4" /></Button>
+                                            </Link>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}

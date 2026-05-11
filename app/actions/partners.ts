@@ -2,6 +2,13 @@
 
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { Partner, SubPartner, PartnerCommission, PartnerKYC } from '@/types/partners';
+import { sendMail } from '@/lib/email';
+import { 
+    partnerApplicationNotificationTemplate, 
+    partnerApplicationConfirmationTemplate,
+    partnerApplicationAcceptedTemplate,
+    partnerApplicationRejectedTemplate
+} from '@/lib/email-templates';
 
 // --- PARTNER LISTING ---
 
@@ -232,6 +239,108 @@ export async function updatePartner(id: string, data: Partial<Partner>) {
 
     if (error) return { success: false, error: error.message };
     return { success: true, message: 'Partner updated successfully' };
+}
+
+export async function submitPartnerApplication(data: Partial<Partner>) {
+    // This action can be called from a public facing page, so we use a regular client or admin client?
+    // Using admin client to bypass RLS for inserting into franchises if needed, or if public insert is allowed.
+    // The franchise table RLS for insert might not be enabled for anon. 
+    // We'll use createAdminClient to ensure the application goes through.
+    const supabase = await createAdminClient();
+    const { error } = await supabase.from('franchises').insert({
+        franchise_name: data.name,
+        contact_email: data.email,
+        contact_phone: data.phone,
+        alt_phone: data.altPhone,
+        code: data.referralCode,
+        commission_percent: 10, // Default for new applications
+        city: data.city,
+        state: data.state,
+        address: data.address,
+        pincode: data.pincode,
+        bank_details: data.bankDetails,
+        aadhaar_number: data.aadhaarNumber,
+        pan_number: data.panNumber,
+        can_add_sub_partners: data.canAddSubPartners,
+        designation_access: data.designationAccess,
+        status: 'pending',
+        verification_status: 'pending',
+        kyc_status: 'pending'
+    });
+
+    if (error) return { success: false, error: error.message };
+
+    // Send Emails
+    try {
+        // To Admin
+        await sendMail({
+            to: process.env.ADMIN_EMAIL || 'admin@healthmitraus.com',
+            subject: 'New Partner Application Received',
+            html: partnerApplicationNotificationTemplate({
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                city: data.city,
+                state: data.state
+            })
+        });
+
+        // To Applicant
+        if (data.email) {
+            await sendMail({
+                to: data.email,
+                subject: 'Application Received - HealthMitra Partner Program',
+                html: partnerApplicationConfirmationTemplate({
+                    name: data.name
+                })
+            });
+        }
+    } catch (mailError) {
+        console.error('Error sending application emails:', mailError);
+    }
+
+    return { success: true, message: 'Application submitted successfully' };
+}
+
+export async function updatePartnerStatus(id: string, status: 'active' | 'rejected') {
+    const supabase = await createAdminClient();
+
+    // Fetch partner details first to get email and name
+    const { data: partnerData, error: fetchError } = await supabase
+        .from('franchises')
+        .select('franchise_name, contact_email')
+        .eq('id', id)
+        .single();
+
+    if (fetchError) return { success: false, error: fetchError.message };
+
+    const { error } = await supabase.from('franchises')
+        .update({ status })
+        .eq('id', id);
+
+    if (error) return { success: false, error: error.message };
+
+    // Send Acceptance/Rejection email
+    if (partnerData?.contact_email) {
+        try {
+            const subject = status === 'active' 
+                ? 'Welcome to HealthMitra - Partner Application Accepted' 
+                : 'Update on your HealthMitra Partner Application';
+            const html = status === 'active' 
+                ? partnerApplicationAcceptedTemplate({ name: partnerData.franchise_name })
+                : partnerApplicationRejectedTemplate({ name: partnerData.franchise_name });
+
+            await sendMail({
+                to: partnerData.contact_email,
+                subject,
+                html
+            });
+        } catch (mailError) {
+            console.error('Error sending application status email:', mailError);
+        }
+    }
+
+    return { success: true, message: `Partner ${status === 'active' ? 'accepted' : 'rejected'} successfully` };
 }
 
 // --- SUB-PARTNERS ---

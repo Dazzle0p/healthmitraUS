@@ -380,3 +380,53 @@ export const medicalConsultationRequestTemplate = ({ name, email, phone, special
   <p>Please arrange the consultation and notify the user.</p>
 </div>
 `;
+
+export const partnerApplicationNotificationTemplate = ({ name, email, phone, city, state }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <h2>New Partner Application Received</h2>
+  <p>A new partner application has been submitted via the website:</p>
+  <ul>
+    <li><strong>Partner Name:</strong> ${name}</li>
+    <li><strong>Email:</strong> ${email}</li>
+    <li><strong>Phone:</strong> ${phone}</li>
+    <li><strong>Location:</strong> ${city}, ${state}</li>
+  </ul>
+  <p>Please review the application in the Admin Panel.</p>
+  <br/>
+  <p>Best regards,<br/><strong>HealthMitra System</strong></p>
+</div>
+`;
+
+export const partnerApplicationConfirmationTemplate = ({ name }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <p>Dear ${name},</p>
+  <p>Greetings from HealthMitra!</p>
+  <p>Thanks for filling partner form. We have received your application and it is currently under review by our team.</p>
+  <p>We will get back to you shortly with the next steps.</p>
+  <p>If you have any questions, feel free to contact our support desk.</p>
+  <br/>
+  <p>Best regards,<br/><strong>Team HealthMitra</strong></p>
+</div>
+`;
+
+export const partnerApplicationAcceptedTemplate = ({ name }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <p>Dear ${name},</p>
+  <p>Greetings from HealthMitra!</p>
+  <p>Congratulations! Your partner application has been accepted.</p>
+  <p>We are excited to welcome you to the HealthMitra network. You will receive further instructions shortly regarding your onboarding process and access to your partner dashboard.</p>
+  <br/>
+  <p>Best regards,<br/><strong>Team HealthMitra</strong></p>
+</div>
+`;
+
+export const partnerApplicationRejectedTemplate = ({ name }: any) => `
+<div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+  <p>Dear ${name},</p>
+  <p>Greetings from HealthMitra!</p>
+  <p>Thank you for your interest in partnering with us. Unfortunately, after careful review, we are unable to accept your application at this time.</p>
+  <p>We wish you the best in your future endeavors.</p>
+  <br/>
+  <p>Best regards,<br/><strong>Team HealthMitra</strong></p>
+</div>
+`;
